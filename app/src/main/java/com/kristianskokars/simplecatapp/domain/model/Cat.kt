@@ -14,4 +14,5 @@ data class Cat(
     @PrimaryKey(autoGenerate = false) val id: String,
     val url: String,
     val name: String?,
+    val fetchedDateInMillis: Long,
 ) : Parcelable

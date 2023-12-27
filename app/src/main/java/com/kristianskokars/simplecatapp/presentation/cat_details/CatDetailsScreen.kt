@@ -98,6 +98,7 @@ private fun DownloadButton(onDownloadClick: () -> Unit) {
     IconButton(
         modifier = Modifier.padding(bottom = 16.dp),
         onClick = onDownloadClick,
+        rippleRadius = 40.dp,
     ) {
         Icon(
             painter = painterResource(id = R.drawable.ic_download),

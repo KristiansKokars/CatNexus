@@ -21,7 +21,7 @@ class CatRepositoryImpl(
     private val catDao = local.catDao()
     override val cats: Flow<List<Cat>> = catDao.getCats().flowOn(ioDispatcher)
 
-    override suspend fun refreshCats() = withContext(ioDispatcher) {
+    override suspend fun refreshCats(clearPrevious: Boolean) = withContext(ioDispatcher) {
         val requestCats = { async { remote.getCats() } }
         // API has a limit of 10 cats, so we instead make a few concurrent requests
         val newCats = (0..7)
@@ -31,7 +31,9 @@ class CatRepositoryImpl(
             .map { it.toCat() }
         local.withTransaction {
             catDao.addCats(newCats)
-            catDao.clearCatsNotIn(newCats.map { it.id })
+            if (clearPrevious) {
+                catDao.clearCatsNotIn(newCats.map { it.id })
+            }
         }
     }
 

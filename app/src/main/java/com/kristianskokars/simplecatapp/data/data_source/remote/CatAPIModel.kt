@@ -9,5 +9,7 @@ data class CatAPIModel(
     val url: String,
     val name: String? = null,
 ) {
-    fun toCat() = Cat(id, url, name)
+    // TODO: extract the logic out of here for time
+    // TODO: may need a bit more logic to sort properly
+    fun toCat() = Cat(id, url, name, fetchedDateInMillis = System.currentTimeMillis())
 }

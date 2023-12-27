@@ -9,26 +9,39 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-// Remember to add Application and MainActivity @AndroidEntryPoint
 @HiltViewModel
 class CatListViewModel @Inject constructor(
-    private val repository: CatRepository
-): ViewModel() {
-    private val _isRefreshing = MutableStateFlow(false)
-    val isRefreshing = _isRefreshing.asStateFlow()
+    private val repository: CatRepository,
+) : ViewModel() {
+    private val isLoading = MutableStateFlow(false)
 
-    val cats = repository.cats.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+    val state = combine(
+        repository.cats,
+        isLoading,
+    ) { cats, isLoading ->
+        when {
+            isLoading && cats.isEmpty() -> CatListState.Loading
+            isLoading -> CatListState.Loaded(cats)
+            !isLoading && cats.isEmpty() -> CatListState.NoCats
+            !isLoading -> CatListState.Loaded(cats)
+            else -> throw IllegalStateException("I hope this does not reach")
+        }
+    }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), CatListState.Loading)
 
     init {
-        refreshCats()
+        fetchCats(clearPreviousCats = true)
     }
 
-    fun refreshCats() {
+    fun fetchCats(clearPreviousCats: Boolean = false) {
+        if (isLoading.value) return
+
         viewModelScope.launch {
-            Log.d("CatListViewModel", "Refreshing cats")
-            _isRefreshing.update { true }
-            repository.refreshCats()
-            _isRefreshing.update { false }
+            Log.d("CatListViewModel", "Loading cats")
+            isLoading.update { true }
+            repository.refreshCats(clearPreviousCats)
+            isLoading.update { false }
+            Log.d("CatListViewModel", "Loaded new cats")
         }
     }
 }

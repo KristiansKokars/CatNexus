@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CatDao {
-    @Query("SELECT * FROM $CAT_TABLE_NAME")
+    @Query("SELECT * FROM $CAT_TABLE_NAME ORDER BY fetchedDateInMillis ASC")
     fun getCats(): Flow<List<Cat>>
 
     @Query("SELECT * FROM $CAT_TABLE_NAME WHERE id = :catId")
