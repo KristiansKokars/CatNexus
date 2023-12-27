@@ -19,7 +19,7 @@ fun CatCard(
     ) {
         AsyncImage(
             model = cat.url,
-            contentScale = ContentScale.Fit,
+            contentScale = ContentScale.Crop,
             contentDescription = null,
         )
     }
