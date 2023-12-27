@@ -46,7 +46,7 @@ class DownloadImageWorker @AssistedInject constructor(
         val notification = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
             .setContentTitle(contentTitle)
             .setContentText(contentText)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_cat)
             .setOngoing(true)
             .addAction(android.R.drawable.ic_delete, cancel, intent)
             .build()
@@ -63,12 +63,12 @@ class DownloadImageWorker @AssistedInject constructor(
                 context,
                 1, // TODO: Deal with IDs
                 Intent(Intent.ACTION_VIEW, fileUri),
-                PendingIntent.FLAG_IMMUTABLE
+                PendingIntent.FLAG_IMMUTABLE,
             )
         val notification = NotificationCompat.Builder(context, CHANNEL_ID) // TODO: always remember of Compat libraries... ree
             .setContentTitle(contentTitle)
             .setContentText(contentText)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_cat)
             .setContentIntent(openImageInGallery)
             .build()
 

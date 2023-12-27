@@ -12,7 +12,7 @@ fun BackgroundSurface(block: @Composable () -> Unit) {
     SimpleCatAppTheme {
         Surface(
             modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colors.background
+            color = MaterialTheme.colors.background,
         ) {
             block()
         }
