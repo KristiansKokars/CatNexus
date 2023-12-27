@@ -1,7 +1,6 @@
 package com.kristianskokars.simplecatapp.presentation.cat_list
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -69,6 +68,7 @@ fun CatListContent(
 ) {
     Column(modifier = Modifier.padding(8.dp)) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Spacer(modifier = Modifier.size(8.dp))
             Icon(
                 painter = painterResource(id = R.drawable.ic_cat_large),
                 contentDescription = null,
