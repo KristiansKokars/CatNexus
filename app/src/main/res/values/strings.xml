@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Simple Cat App</string>
+    <string name="app_name">Cat Infinity</string>
     <string name="cancel_download">Cancel Download</string>
     <string name="downloading_picture">Downloading a cat picture %s…</string>
     <string name="downloading">Downloading…</string>
