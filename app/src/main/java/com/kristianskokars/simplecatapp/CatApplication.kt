@@ -5,20 +5,28 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
+import android.widget.Toast
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.kristianskokars.simplecatapp.core.CHANNEL_DESCRIPTION
 import com.kristianskokars.simplecatapp.core.CHANNEL_ID
 import com.kristianskokars.simplecatapp.core.CHANNEL_NAME
 import dagger.hilt.android.HiltAndroidApp
+import io.sentry.Sentry
 import javax.inject.Inject
 
 @HiltAndroidApp
 class CatApplication : Application(), Configuration.Provider {
     @Inject lateinit var workerFactory: HiltWorkerFactory
 
+    private val exceptionHandler =
+        Thread.UncaughtExceptionHandler { _: Thread, e: Throwable ->
+            handleUncaughtException(e)
+        }
+
     override fun onCreate() {
         super.onCreate()
+        attachUnhandledExceptionHandler()
         createNotificationChannel()
     }
 
@@ -39,5 +47,16 @@ class CatApplication : Application(), Configuration.Provider {
                 getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
+    }
+
+    private fun attachUnhandledExceptionHandler() {
+        if (BuildConfig.DEBUG.not()) {
+            Thread.setDefaultUncaughtExceptionHandler(exceptionHandler)
+        }
+    }
+
+    private fun handleUncaughtException(e: Throwable) {
+        Sentry.captureException(e)
+        Toast.makeText(this, getString(R.string.error_unexpected_error, e.localizedMessage), Toast.LENGTH_SHORT).show()
     }
 }

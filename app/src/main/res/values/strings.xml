@@ -11,4 +11,5 @@
     <string name="failed_to_fetch_cats">Failed to fetch cats :(</string>
     <string name="retry">Retry</string>
     <string name="no_cats_found">No cats found from the server :(</string>
+    <string name="error_unexpected_error">Unexpected error: %s</string>
 </resources>
