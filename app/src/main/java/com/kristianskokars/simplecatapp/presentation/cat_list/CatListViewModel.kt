@@ -3,6 +3,7 @@ package com.kristianskokars.simplecatapp.presentation.cat_list
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kristianskokars.simplecatapp.domain.model.ServerError
 import com.kristianskokars.simplecatapp.domain.repository.CatRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -14,17 +15,23 @@ class CatListViewModel @Inject constructor(
     private val repository: CatRepository,
 ) : ViewModel() {
     private val isLoading = MutableStateFlow(false)
+    private val hasServerError = MutableStateFlow<ServerError?>(null)
 
     val state = combine(
         repository.cats,
         isLoading,
-    ) { cats, isLoading ->
+        hasServerError,
+    ) { cats, isLoading, hasServerError ->
         when {
-            isLoading && cats.isEmpty() -> CatListState.Loading
-            isLoading -> CatListState.Loaded(cats)
-            !isLoading && cats.isEmpty() -> CatListState.NoCats
-            !isLoading -> CatListState.Loaded(cats)
-            else -> throw IllegalStateException("I hope this does not reach")
+            hasServerError != null -> when {
+                cats.isEmpty() -> CatListState.Error
+                else -> CatListState.Loaded(cats, hasServerError)
+            }
+            else -> when {
+                isLoading && cats.isEmpty() -> CatListState.Loading
+                !isLoading && cats.isEmpty() -> CatListState.NoCats
+                else -> CatListState.Loaded(cats)
+            }
         }
     }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), CatListState.Loading)
@@ -34,14 +41,15 @@ class CatListViewModel @Inject constructor(
     }
 
     fun fetchCats(clearPreviousCats: Boolean = false) {
-        if (isLoading.value) return
+        if (isLoading.value || hasServerError.value != null) return
 
         viewModelScope.launch {
-            Log.d("CatListViewModel", "Loading cats")
             isLoading.update { true }
-            repository.refreshCats(clearPreviousCats)
+            repository.refreshCats(clearPreviousCats).handle(
+                onSuccess = { hasServerError.update { null } },
+                onError = { hasServerError.update { ServerError } },
+            )
             isLoading.update { false }
-            Log.d("CatListViewModel", "Loaded new cats")
         }
     }
 }

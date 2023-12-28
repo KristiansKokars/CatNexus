@@ -86,7 +86,11 @@ fun CatListContent(
                 onCatClick = onCatClick,
                 bottomSlot = {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-                        LoadingSpinner()
+                        if (state.hasError != null) {
+                            ErrorGettingCats()
+                        } else {
+                            LoadingSpinner()
+                        }
                     }
                 },
                 onScrolledToBottom = onFetchMoreCats,
@@ -124,11 +128,16 @@ private fun ErrorGettingCats() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Icon(painter = painterResource(id = R.drawable.ic_error), contentDescription = null, tint = Red)
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(text = stringResource(R.string.failed_to_fetch_cats), fontSize = 14.sp)
-        // TODO: needs a retry button
+        CatErrorMessage()
     }
+}
+
+@Composable
+private fun CatErrorMessage() {
+    Icon(painter = painterResource(id = R.drawable.ic_error), contentDescription = null, tint = Red)
+    Spacer(modifier = Modifier.height(8.dp))
+    Text(text = stringResource(R.string.failed_to_fetch_cats), fontSize = 14.sp)
+    // TODO: needs a retry button
 }
 
 private fun LazyGridState.isScrolledToEnd() = layoutInfo.visibleItemsInfo.lastOrNull()?.index == layoutInfo.totalItemsCount - 1

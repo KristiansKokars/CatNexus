@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Cat Infinity</string>
+    <string name="app_name">Cat Nexus</string>
     <string name="cancel_download">Cancel Download</string>
     <string name="downloading_picture">Downloading a cat picture %s…</string>
     <string name="downloading">Downloading…</string>
@@ -7,6 +7,6 @@
     <string name="downloaded_from">From: %s</string>
     <string name="save_cat">SAVE CAT</string>
     <string name="go_back">Go back</string>
-    <string name="cat_infinity">Cat Infinity</string>
+    <string name="cat_infinity">Cat Nexus</string>
     <string name="failed_to_fetch_cats">Failed to fetch cats :(</string>
 </resources>
