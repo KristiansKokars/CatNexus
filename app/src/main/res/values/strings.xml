@@ -9,4 +9,6 @@
     <string name="go_back">Go back</string>
     <string name="cat_infinity">Cat Nexus</string>
     <string name="failed_to_fetch_cats">Failed to fetch cats :(</string>
+    <string name="retry">Retry</string>
+    <string name="no_cats_found">No cats found from the server :(</string>
 </resources>

@@ -1,7 +1,6 @@
 package com.kristianskokars.simplecatapp.presentation.cat_list
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,21 +10,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyGridState
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color.Companion.Red
@@ -39,7 +29,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kristianskokars.simplecatapp.R
 import com.kristianskokars.simplecatapp.domain.model.Cat
 import com.kristianskokars.simplecatapp.presentation.components.BackgroundSurface
-import com.kristianskokars.simplecatapp.presentation.components.CatCard
+import com.kristianskokars.simplecatapp.presentation.components.CatGrid
+import com.kristianskokars.simplecatapp.presentation.components.LoadingSpinner
 import com.kristianskokars.simplecatapp.presentation.destinations.CatDetailsScreenDestination
 import com.kristianskokars.simplecatapp.presentation.ui.theme.Orange
 import com.ramcosta.composedestinations.annotation.Destination
@@ -57,6 +48,7 @@ fun CatListScreen(
         state = state,
         onCatClick = { navigator.navigate(CatDetailsScreenDestination(it)) },
         onFetchMoreCats = viewModel::fetchCats,
+        onRetry = viewModel::retryFetch,
     )
 }
 
@@ -65,6 +57,7 @@ fun CatListContent(
     state: CatListState,
     onCatClick: (Cat) -> Unit,
     onFetchMoreCats: () -> Unit,
+    onRetry: () -> Unit,
 ) {
     Column(modifier = Modifier.padding(8.dp)) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -87,7 +80,7 @@ fun CatListContent(
                 bottomSlot = {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
                         if (state.hasError != null) {
-                            ErrorGettingCats()
+                            ErrorGettingCats(onRetry)
                         } else {
                             LoadingSpinner()
                         }
@@ -95,9 +88,9 @@ fun CatListContent(
                 },
                 onScrolledToBottom = onFetchMoreCats,
             )
-            is CatListState.Error -> ErrorGettingCats()
+            is CatListState.Error -> ErrorGettingCats(onRetry)
             CatListState.Loading -> LoadingCats()
-            CatListState.NoCats -> Text(text = "No cats, sad :(")
+            CatListState.NoCats -> Text(text = stringResource(R.string.no_cats_found))
         }
     }
 }
@@ -114,64 +107,17 @@ private fun LoadingCats() {
 }
 
 @Composable
-private fun LoadingSpinner(modifier: Modifier = Modifier) {
-    CircularProgressIndicator(
-        modifier = modifier.size(48.dp),
-        color = Orange,
-    )
-}
-
-@Composable
-private fun ErrorGettingCats() {
+private fun ErrorGettingCats(onRetry: () -> Unit) {
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        CatErrorMessage()
-    }
-}
-
-@Composable
-private fun CatErrorMessage() {
-    Icon(painter = painterResource(id = R.drawable.ic_error), contentDescription = null, tint = Red)
-    Spacer(modifier = Modifier.height(8.dp))
-    Text(text = stringResource(R.string.failed_to_fetch_cats), fontSize = 14.sp)
-    // TODO: needs a retry button
-}
-
-private fun LazyGridState.isScrolledToEnd() = layoutInfo.visibleItemsInfo.lastOrNull()?.index == layoutInfo.totalItemsCount - 1
-
-@Composable
-private fun CatGrid(cats: List<Cat>, onCatClick: (Cat) -> Unit, bottomSlot: @Composable () -> Unit = {}, onScrolledToBottom: () -> Unit = {}) {
-    val state = rememberLazyGridState()
-    val currentOnScrolledToBottom by rememberUpdatedState(onScrolledToBottom)
-    val endOfListReached by remember {
-        derivedStateOf {
-            state.isScrolledToEnd()
-        }
-    }
-
-    LaunchedEffect(endOfListReached) {
-        if (!endOfListReached) return@LaunchedEffect
-        currentOnScrolledToBottom()
-    }
-
-    LazyVerticalGrid(
-        modifier = Modifier.fillMaxSize(),
-        state = state,
-        columns = GridCells.Fixed(3),
-    ) {
-        items(cats, key = { it.id }) { cat ->
-            CatCard(
-                modifier = Modifier
-                    .size(124.dp)
-                    .clickable { onCatClick(cat) },
-                cat = cat,
-            )
-        }
-        item(span = { GridItemSpan(3) }) {
-            bottomSlot()
+        Icon(painter = painterResource(id = R.drawable.ic_error), contentDescription = null, tint = Red)
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(text = stringResource(R.string.failed_to_fetch_cats), fontSize = 14.sp)
+        TextButton(onClick = onRetry, colors = ButtonDefaults.textButtonColors(contentColor = Orange)) {
+            Text(text = stringResource(R.string.retry), fontSize = 12.sp)
         }
     }
 }
@@ -184,6 +130,7 @@ private fun CatListContentPreview() {
             state = CatListState.Loading,
             onFetchMoreCats = {},
             onCatClick = {},
+            onRetry = {},
         )
     }
 }

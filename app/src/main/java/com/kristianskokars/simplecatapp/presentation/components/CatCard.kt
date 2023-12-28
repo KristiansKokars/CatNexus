@@ -15,7 +15,7 @@ fun CatCard(
     cat: Cat,
 ) {
     Card(
-        modifier = modifier.padding(8.dp), // TODO: move to shared things
+        modifier = modifier.padding(8.dp),
     ) {
         AsyncImage(
             model = cat.url,

@@ -52,4 +52,9 @@ class CatListViewModel @Inject constructor(
             isLoading.update { false }
         }
     }
+
+    fun retryFetch() {
+        hasServerError.update { null }
+        fetchCats()
+    }
 }
