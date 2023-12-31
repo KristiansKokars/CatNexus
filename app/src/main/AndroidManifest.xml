@@ -17,7 +17,7 @@
         <meta-data android:name="io.sentry.dsn" android:value="https://02dab9384efb7ba02afaccc8e7e67dcd@o4505538311880704.ingest.sentry.io/4506474579296256" />
 
         <activity
-            android:name=".presentation.MainActivity"
+            android:name=".MainActivity"
             android:exported="true"
             android:theme="@style/Theme.SimpleCatApp">
             <intent-filter>

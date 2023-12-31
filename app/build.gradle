@@ -11,11 +11,11 @@ plugins {
 }
 
 android {
-    namespace 'com.kristianskokars.simplecatapp'
+    namespace 'com.kristianskokars.catnexus'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.kristianskokars.simplecatapp"
+        applicationId "com.kristianskokars.catnexus"
         minSdk 23
         targetSdk 34
         versionCode 1
@@ -43,6 +43,7 @@ android {
     }
     buildFeatures {
         compose true
+        buildConfig true
     }
     composeOptions {
         kotlinCompilerExtensionVersion compose_compiler_version
