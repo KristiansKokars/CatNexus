@@ -1,10 +1,10 @@
 <resources>
     <string name="app_name">Cat Nexus</string>
     <string name="cancel_download">Cancel Download</string>
-    <string name="downloading_picture">Downloading a cat picture %s…</string>
-    <string name="downloading">Downloading…</string>
-    <string name="downloaded_picture">Downloaded %s picture!</string>
-    <string name="downloaded_from">From: %s</string>
+    <string name="downloading_picture">Downloading a cat picture…</string>
+    <string name="downloading">Downloading picture from: %s…</string>
+    <string name="downloaded_picture">Downloaded a cat picture!</string>
+    <string name="downloaded_from">Downloaded picture from: %s</string>
     <string name="save_cat">SAVE CAT</string>
     <string name="go_back">Go back</string>
     <string name="cat_infinity">Cat Nexus</string>

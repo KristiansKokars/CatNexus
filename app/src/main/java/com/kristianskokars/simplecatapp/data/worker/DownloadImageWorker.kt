@@ -26,20 +26,20 @@ class DownloadImageWorker @AssistedInject constructor(
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
     override suspend fun doWork(): Result {
-        val inputUrl = inputData.getString(DOWNLOAD_IMAGE_URL) ?: return Result.failure()
+        val downloadUrl = inputData.getString(DOWNLOAD_IMAGE_URL) ?: return Result.failure()
         val fileName = inputData.getString(OUTPUT_FILE_NAME) ?: return Result.failure()
 
-        setForeground(createForegroundInfo(fileName))
-        val fileUri = fileStorage.downloadImage(inputUrl, fileName) ?: return Result.failure()
-        showFinishedNotification(inputUrl, fileName, fileUri)
+        setForeground(createForegroundInfo(downloadUrl))
+        val fileUri = fileStorage.downloadImage(downloadUrl, fileName) ?: return Result.failure()
+        showFinishedNotification(downloadUrl, fileUri)
 
         return Result.success()
     }
 
-    private fun createForegroundInfo(fileName: String): ForegroundInfo {
+    private fun createForegroundInfo(downloadUrl: String): ForegroundInfo {
         val cancel = context.getString(R.string.cancel_download)
-        val contentTitle = context.getString(R.string.downloading_picture, fileName)
-        val contentText = context.getString(R.string.downloading)
+        val contentTitle = context.getString(R.string.downloading_picture)
+        val contentText = context.getString(R.string.downloading, downloadUrl)
 
         val intent = WorkManager.getInstance(applicationContext).createCancelPendingIntent(id)
 
@@ -51,21 +51,21 @@ class DownloadImageWorker @AssistedInject constructor(
             .addAction(android.R.drawable.ic_delete, cancel, intent)
             .build()
 
-        return ForegroundInfo(1, notification)
+        return ForegroundInfo(DOWNLOAD_NOTIFICATION_ID, notification)
     }
 
-    private fun showFinishedNotification(inputUrl: String, fileName: String, fileUri: Uri) {
-        val contentTitle = context.getString(R.string.downloaded_picture, fileName)
-        val contentText = context.getString(R.string.downloaded_from, inputUrl)
+    private fun showFinishedNotification(downloadUrl: String, fileUri: Uri) {
+        val contentTitle = context.getString(R.string.downloaded_picture)
+        val contentText = context.getString(R.string.downloaded_from, downloadUrl)
 
         val openImageInGallery =
             PendingIntent.getActivity(
                 context,
-                1, // TODO: Deal with IDs
+                OPEN_IMAGE_REQUEST_CODE,
                 Intent(Intent.ACTION_VIEW, fileUri),
                 PendingIntent.FLAG_IMMUTABLE,
             )
-        val notification = NotificationCompat.Builder(context, CHANNEL_ID) // TODO: always remember of Compat libraries... ree
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setContentTitle(contentTitle)
             .setContentText(contentText)
             .setSmallIcon(R.drawable.ic_cat)
@@ -73,12 +73,15 @@ class DownloadImageWorker @AssistedInject constructor(
             .build()
 
         with(notificationManager) {
-            notify(2, notification)
+            notify(COMPLETED_DOWNLOAD_NOTIFICATION_ID, notification)
         }
     }
 
     companion object {
         const val DOWNLOAD_IMAGE_URL = "DownloadImageURL"
         const val OUTPUT_FILE_NAME = "OutputFileName"
+        const val OPEN_IMAGE_REQUEST_CODE = 1
+        const val DOWNLOAD_NOTIFICATION_ID = 1
+        const val COMPLETED_DOWNLOAD_NOTIFICATION_ID = 2
     }
 }
