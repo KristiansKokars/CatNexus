@@ -1,10 +1,9 @@
 package com.kristianskokars.simplecatapp.data.repository
 
-import android.util.Log
 import androidx.room.withTransaction
 import androidx.work.*
 import com.kristianskokars.simplecatapp.core.Err
-import com.kristianskokars.simplecatapp.core.Success
+import com.kristianskokars.simplecatapp.core.Ok
 import com.kristianskokars.simplecatapp.data.data_source.local.CatDatabase
 import com.kristianskokars.simplecatapp.data.data_source.remote.CatAPI
 import com.kristianskokars.simplecatapp.data.worker.DownloadImageWorker
@@ -41,7 +40,7 @@ class CatRepositoryImpl(
                         catDao.clearCatsNotIn(newCats.map { it.id })
                     }
                 }
-                Success()
+                Ok()
             }
         } catch (exception: Exception) {
             Err(ServerError)
