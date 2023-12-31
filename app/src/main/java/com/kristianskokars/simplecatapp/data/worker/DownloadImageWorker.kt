@@ -30,14 +30,20 @@ class DownloadImageWorker @AssistedInject constructor(
         val fileName = inputData.getString(OUTPUT_FILE_NAME) ?: return Result.failure()
 
         setForeground(createForegroundInfo(downloadUrl))
-        val fileUri = fileStorage.downloadImage(downloadUrl, fileName) ?: return Result.failure()
-        showFinishedNotification(downloadUrl, fileUri)
-
-        return Result.success()
+        return fileStorage.downloadImage(downloadUrl, fileName).handle(
+            onSuccess = { fileUri ->
+                showFinishedNotification(downloadUrl, fileUri)
+                Result.success()
+            },
+            onError = {
+                showFailedNotification(downloadUrl)
+                Result.failure()
+            },
+        )
     }
 
     private fun createForegroundInfo(downloadUrl: String): ForegroundInfo {
-        val cancel = context.getString(R.string.cancel_download)
+        val cancelText = context.getString(R.string.cancel_download)
         val contentTitle = context.getString(R.string.downloading_picture)
         val contentText = context.getString(R.string.downloading, downloadUrl)
 
@@ -48,7 +54,7 @@ class DownloadImageWorker @AssistedInject constructor(
             .setContentText(contentText)
             .setSmallIcon(R.drawable.ic_cat)
             .setOngoing(true)
-            .addAction(android.R.drawable.ic_delete, cancel, intent)
+            .addAction(android.R.drawable.ic_delete, cancelText, intent)
             .build()
 
         return ForegroundInfo(DOWNLOAD_NOTIFICATION_ID, notification)
@@ -77,11 +83,27 @@ class DownloadImageWorker @AssistedInject constructor(
         }
     }
 
+    private fun showFailedNotification(downloadUrl: String) {
+        val contentTitle = context.getString(R.string.error_downloading_picture_title)
+        val contentText = context.getString(R.string.error_downloading_picture_text, downloadUrl)
+
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setContentTitle(contentTitle)
+            .setContentText(contentText)
+            .setSmallIcon(R.drawable.ic_cat)
+            .build()
+
+        with(notificationManager) {
+            notify(FAILED_DOWNLOAD_NOTIFICATION_ID, notification)
+        }
+    }
+
     companion object {
         const val DOWNLOAD_IMAGE_URL = "DownloadImageURL"
         const val OUTPUT_FILE_NAME = "OutputFileName"
         const val OPEN_IMAGE_REQUEST_CODE = 1
         const val DOWNLOAD_NOTIFICATION_ID = 1
         const val COMPLETED_DOWNLOAD_NOTIFICATION_ID = 2
+        const val FAILED_DOWNLOAD_NOTIFICATION_ID = 3
     }
 }
