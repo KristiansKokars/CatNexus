@@ -1,5 +1,7 @@
 # Cat Nexus
 
+<img src="screenshots/CatList.png" alt="Cat List Screen" width="45%"/> <img src="screenshots/CatDetails.png" alt="Cat Details Screen" width="45%"/>
+
 Cat Nexus is a modern built Android app to scroll through an infinite list of cat pictures and download your favourites.
 
 It was created to teach new students the basics of Android development in a fun way, and has been polished up for release on Google Play Store to gain experience on that part of the application lifecycle.
