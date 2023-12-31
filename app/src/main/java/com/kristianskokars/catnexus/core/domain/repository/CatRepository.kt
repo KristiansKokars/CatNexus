@@ -10,5 +10,5 @@ interface CatRepository {
     val cats: Flow<List<Cat>>
     fun getCat(id: String): Flow<Cat>
     fun saveCatImage(cat: Cat)
-    suspend fun refreshCats(clearPrevious: Boolean = false): Result<ServerError, Success>
+    suspend fun refreshCats(shouldClearPrevious: Boolean = false): Result<ServerError, Success>
 }

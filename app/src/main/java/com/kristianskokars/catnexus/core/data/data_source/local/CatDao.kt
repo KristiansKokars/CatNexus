@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import com.kristianskokars.catnexus.core.CAT_TABLE_NAME
 import com.kristianskokars.catnexus.core.domain.model.Cat
 import kotlinx.coroutines.flow.Flow
@@ -21,4 +22,10 @@ interface CatDao {
 
     @Query("DELETE FROM $CAT_TABLE_NAME WHERE id NOT IN (:catIds)")
     suspend fun clearCatsNotIn(catIds: List<String>)
+
+    @Transaction
+    suspend fun insertNewCats(newCats: List<Cat>, clearPrevious: Boolean = false) {
+        addCats(newCats)
+        clearCatsNotIn(newCats.map { it.id })
+    }
 }

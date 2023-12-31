@@ -1,20 +1,19 @@
 package com.kristianskokars.catnexus.core.data.repository
 
-import androidx.room.withTransaction
 import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
-import com.kristianskokars.catnexus.lib.Err
-import com.kristianskokars.catnexus.lib.Ok
-import com.kristianskokars.catnexus.core.data.data_source.local.CatDatabase
+import com.kristianskokars.catnexus.core.data.data_source.local.CatDao
 import com.kristianskokars.catnexus.core.data.data_source.remote.CatAPI
 import com.kristianskokars.catnexus.core.data.worker.DownloadImageWorker
 import com.kristianskokars.catnexus.core.domain.model.Cat
 import com.kristianskokars.catnexus.core.domain.model.ServerError
 import com.kristianskokars.catnexus.core.domain.repository.CatRepository
+import com.kristianskokars.catnexus.lib.Err
+import com.kristianskokars.catnexus.lib.Ok
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,16 +25,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class OfflineFirstCatRepository(
-    private val local: CatDatabase,
+    private val local: CatDao,
     private val remote: CatAPI,
     private val workManager: WorkManager,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : CatRepository {
     private val scope = CoroutineScope(ioDispatcher)
-    private val catDao = local.catDao()
-    override val cats: Flow<List<Cat>> = catDao.getCats().flowOn(ioDispatcher)
+    override val cats: Flow<List<Cat>> = local.getCats().flowOn(ioDispatcher)
 
-    override suspend fun refreshCats(clearPrevious: Boolean) =
+    override suspend fun refreshCats(shouldClearPrevious: Boolean) =
         try {
             withContext(ioDispatcher) {
                 val requestCats = { async { remote.getCats() } }
@@ -45,19 +43,14 @@ class OfflineFirstCatRepository(
                     .awaitAll()
                     .flatten()
                     .map { it.toCat() }
-                local.withTransaction {
-                    catDao.addCats(newCats)
-                    if (clearPrevious) {
-                        catDao.clearCatsNotIn(newCats.map { it.id })
-                    }
-                }
+                local.insertNewCats(newCats, shouldClearPrevious)
                 Ok()
             }
         } catch (exception: Exception) {
             Err(ServerError)
         }
 
-    override fun getCat(id: String): Flow<Cat> = catDao.getCat(id)
+    override fun getCat(id: String): Flow<Cat> = local.getCat(id)
 
     override fun saveCatImage(cat: Cat) {
         scope.launch {
