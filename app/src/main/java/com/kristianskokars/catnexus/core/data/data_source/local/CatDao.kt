@@ -26,6 +26,6 @@ interface CatDao {
     @Transaction
     suspend fun insertNewCats(newCats: List<Cat>, clearPrevious: Boolean = false) {
         addCats(newCats)
-        clearCatsNotIn(newCats.map { it.id })
+        if (clearPrevious) clearCatsNotIn(newCats.map { it.id })
     }
 }
