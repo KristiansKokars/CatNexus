@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -59,11 +61,10 @@ fun CatDetailsContent(
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().weight(1f, fill = false),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Start,
         ) {
             IconButton(
@@ -77,7 +78,7 @@ fun CatDetailsContent(
                 )
             }
         }
-        Box(modifier = Modifier.fillMaxWidth().weight(8f)) {
+        Box(modifier = Modifier.aspectRatio(16/9f).fillMaxWidth().weight(1f)) {
             AsyncImage(
                 model = cat?.url,
                 modifier = Modifier.fillMaxSize().align(Alignment.Center),
@@ -85,7 +86,7 @@ fun CatDetailsContent(
                 contentDescription = null,
             )
         }
-        Row(modifier = Modifier.weight(1f)) {
+        Row(modifier = Modifier.defaultMinSize(minHeight = 48.dp)) {
             DownloadButton(
                 onDownloadClick = onDownloadClick,
             )
@@ -96,7 +97,7 @@ fun CatDetailsContent(
 @Composable
 private fun DownloadButton(onDownloadClick: () -> Unit) {
     IconButton(
-        modifier = Modifier.padding(bottom = 16.dp),
+        modifier = Modifier.padding(vertical = 16.dp),
         onClick = onDownloadClick,
         rippleRadius = 40.dp,
     ) {
