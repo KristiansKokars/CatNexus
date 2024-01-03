@@ -13,6 +13,7 @@ import com.kristianskokars.catnexus.core.CHANNEL_ID
 import com.kristianskokars.catnexus.core.CHANNEL_NAME
 import dagger.hilt.android.HiltAndroidApp
 import io.sentry.Sentry
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltAndroidApp
@@ -28,6 +29,10 @@ class CatApplication : Application(), Configuration.Provider {
         super.onCreate()
         attachUnhandledExceptionHandler()
         createNotificationChannel()
+
+        if (BuildConfig.DEBUG) {
+            Timber.plant(Timber.DebugTree())
+        }
     }
 
     override val workManagerConfiguration: Configuration by lazy {

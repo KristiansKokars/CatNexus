@@ -7,16 +7,15 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import android.util.Log
 import androidx.core.graphics.drawable.toBitmap
 import coil.ImageLoader
 import coil.request.ImageRequest
-import com.kristianskokars.catnexus.core.LOG_TAG
 import com.kristianskokars.catnexus.core.domain.repository.FileStorage
 import com.kristianskokars.catnexus.lib.Err
 import com.kristianskokars.catnexus.lib.Ok
 import com.kristianskokars.catnexus.lib.Result
 import io.sentry.Sentry
+import timber.log.Timber
 import java.io.FileOutputStream
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -54,7 +53,7 @@ class AndroidFileStorage(private val context: Context) : FileStorage {
             resolver.update(newImageUri, newImageDetails, null, null)
             return Ok(newImageUri)
         } catch (e: Exception) {
-            Log.e(LOG_TAG, "Failed to download image", e)
+            Timber.e(e, "Failed to download image")
             Sentry.captureException(e)
             return Err(Unit)
         }

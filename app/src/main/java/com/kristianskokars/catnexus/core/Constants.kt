@@ -7,4 +7,3 @@ const val NETWORK_TIMEOUT = 25L
 const val CHANNEL_NAME = "Cat Nexus"
 const val CHANNEL_DESCRIPTION = "Cat Nexus Downloading Picture Notifications"
 const val CHANNEL_ID = "CatsNexus"
-const val LOG_TAG = "CatNexus"
