@@ -20,7 +20,7 @@ fun CatCard(
         AsyncImage(
             model = cat.url,
             contentScale = ContentScale.Crop,
-            contentDescription = null,
+            contentDescription = "Picture of Cat ${cat.name ?: "with ID of ${cat.id}"}",
         )
     }
 }
