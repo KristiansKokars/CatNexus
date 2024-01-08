@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -78,11 +77,11 @@ fun CatDetailsContent(
                 )
             }
         }
-        Box(modifier = Modifier.aspectRatio(16/9f).fillMaxWidth().weight(1f)) {
+        Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
             AsyncImage(
                 model = cat?.url,
                 modifier = Modifier.fillMaxSize().align(Alignment.Center),
-                contentScale = ContentScale.FillWidth,
+                contentScale = ContentScale.Fit,
                 contentDescription = null,
             )
         }
