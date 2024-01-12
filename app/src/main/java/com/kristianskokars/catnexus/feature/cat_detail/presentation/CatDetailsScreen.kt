@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.ImageLoader
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.kristianskokars.catnexus.R
 import com.kristianskokars.catnexus.core.domain.model.Cat
 import com.kristianskokars.catnexus.core.presentation.components.BackgroundSurface
@@ -58,7 +59,7 @@ fun CatDetailsScreen(
 
 @Composable
 fun CatDetailsContent(
-    cat: Cat?,
+    cat: Cat,
     navigator: DestinationsNavigator,
     imageLoader: ImageLoader,
     onDownloadClick: () -> Unit,
@@ -86,7 +87,10 @@ fun CatDetailsContent(
             .fillMaxWidth()
             .weight(1f)) {
             AsyncImage(
-                model = cat?.url,
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(cat.url)
+                    .crossfade(true)
+                    .build(),
                 modifier = Modifier
                     .fillMaxSize()
                     .align(Alignment.Center),
@@ -151,7 +155,7 @@ private fun CatDetailsScreenPreview() {
 
     BackgroundSurface {
         CatDetailsContent(
-            cat = null,
+            cat = Cat(id = "cat", url = "cat", name = "cat", fetchedDateInMillis = 0),
             navigator = EmptyDestinationsNavigator,
             imageLoader = ImageLoader.Builder(context).build()
         ) {}
