@@ -1,8 +1,12 @@
 package com.kristianskokars.catnexus.di
 
 import android.content.Context
+import android.os.Build
 import androidx.room.Room
 import androidx.work.WorkManager
+import coil.ImageLoader
+import coil.decode.GifDecoder
+import coil.decode.ImageDecoderDecoder
 import com.kristianskokars.catnexus.core.BASE_URL
 import com.kristianskokars.catnexus.core.CAT_DATABASE
 import com.kristianskokars.catnexus.core.data.data_source.local.AndroidFileStorage
@@ -57,9 +61,21 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideFileStorage(@ApplicationContext context: Context): FileStorage = AndroidFileStorage(context)
+    fun provideWorkManager(@ApplicationContext context: Context): WorkManager = WorkManager.getInstance(context)
 
     @Provides
     @Singleton
-    fun provideWorkManager(@ApplicationContext context: Context): WorkManager = WorkManager.getInstance(context)
+    fun provideGifImageLoader(@ApplicationContext context: Context): ImageLoader = ImageLoader.Builder(context)
+        .components {
+            if (Build.VERSION.SDK_INT >= 28) {
+                add(ImageDecoderDecoder.Factory())
+            } else {
+                add(GifDecoder.Factory())
+            }
+        }
+        .build()
+
+    @Provides
+    @Singleton
+    fun provideFileStorage(androidFileStorage: AndroidFileStorage): FileStorage = androidFileStorage
 }

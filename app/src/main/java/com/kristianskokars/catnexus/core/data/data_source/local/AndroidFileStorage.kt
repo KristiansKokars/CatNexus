@@ -14,18 +14,25 @@ import com.kristianskokars.catnexus.core.domain.repository.FileStorage
 import com.kristianskokars.catnexus.lib.Err
 import com.kristianskokars.catnexus.lib.Ok
 import com.kristianskokars.catnexus.lib.Result
+import dagger.hilt.android.qualifiers.ApplicationContext
 import io.sentry.Sentry
 import timber.log.Timber
 import java.io.FileOutputStream
+import java.net.URL
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class AndroidFileStorage(private val context: Context) : FileStorage {
-    private val imageLoader by lazy { ImageLoader.Builder(context).build() }
-
+@Singleton
+class AndroidFileStorage @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val imageLoader: ImageLoader
+) : FileStorage {
     override suspend fun downloadImage(url: String, fileName: String): Result<Unit, Uri> {
         try {
             val resolver = context.contentResolver
+            val mimeType = mimeTypeFromUrl(url)
 
             val imageCollection =
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -36,7 +43,7 @@ class AndroidFileStorage(private val context: Context) : FileStorage {
 
             val newImageDetails = ContentValues().apply {
                 put(MediaStore.Images.Media.DISPLAY_NAME, fileName)
-                put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+                put(MediaStore.Images.Media.MIME_TYPE, mimeType)
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     put(MediaStore.Images.Media.IS_PENDING, 1)
@@ -44,7 +51,7 @@ class AndroidFileStorage(private val context: Context) : FileStorage {
             }
 
             val newImageUri = resolver.insert(imageCollection, newImageDetails) ?: return Err(Unit)
-            writeImageToFileFromUrl(resolver, newImageUri, url)
+            writeImageToFileFromUrl(resolver, newImageUri, url, mimeType)
             newImageDetails.clear()
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -59,26 +66,53 @@ class AndroidFileStorage(private val context: Context) : FileStorage {
         }
     }
 
-    private suspend fun writeImageToFileFromUrl(resolver: ContentResolver, uri: Uri, url: String) =
-        suspendCoroutine { continuation ->
-            // To avoid downloading the image twice, we use Coil to get the URL and it retrieves it from it's own cache.
-            val request = ImageRequest.Builder(context)
-                .data(url)
-                .target(
-                    onSuccess = { image ->
-                        resolver.openFileDescriptor(uri, "w")
-                            .use { pfd ->
-                                pfd?.let {
-                                    val fos = FileOutputStream(it.fileDescriptor)
-                                    image.toBitmap()
-                                        .compress(Bitmap.CompressFormat.JPEG, 100, fos)
-                                    fos.close()
-                                }
-                            }
-                        continuation.resume(Unit)
-                    },
-                )
-                .build()
-            imageLoader.enqueue(request)
+    private suspend fun writeImageToFileFromUrl(resolver: ContentResolver, uri: Uri, url: String, mimeType: String) {
+        when (mimeType) {
+            "image/gif" -> saveGifToUri(resolver, uri, url)
+            else -> saveImageFromCoilToUri(resolver, uri, url)
         }
+    }
+
+    // TODO: could be migrated to DownloadManager down the line
+    private fun saveGifToUri(resolver: ContentResolver, uri: Uri, url: String) {
+        URL(url).openStream().use { inputStream ->
+            resolver.openOutputStream(uri).use { outputStream ->
+                inputStream.copyTo(outputStream!!)
+            }
+        }
+    }
+
+    // To avoid downloading the image twice, we use Coil to get the URL and it retrieves it from it's own cache.
+    private suspend fun saveImageFromCoilToUri(
+        resolver: ContentResolver,
+        uri: Uri,
+        url: String,
+    ) = suspendCoroutine { continuation ->
+        val request = ImageRequest.Builder(context)
+            .data(url)
+            .target(
+                onSuccess = { image ->
+                    resolver.openFileDescriptor(uri, "w")
+                        .use { pfd ->
+                            pfd?.let {
+                                val fos = FileOutputStream(it.fileDescriptor)
+                                image.toBitmap().compress(Bitmap.CompressFormat.JPEG, 100, fos)
+                                fos.close()
+                            }
+                        }
+                    continuation.resume(Unit)
+                },
+            )
+            .build()
+        imageLoader.enqueue(request)
+    }
+
+    // we are assuming the given file will always be an image type
+    private fun mimeTypeFromUrl(url: String): String {
+        val extension = url.split(".").last().lowercase()
+        return when (extension) {
+            "gif" -> "image/gif"
+            else -> "image/jpeg"
+        }
+    }
 }

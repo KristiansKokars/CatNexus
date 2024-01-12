@@ -94,7 +94,8 @@ dependencies {
     implementation 'androidx.work:work-runtime-ktx:2.9.0'
 
     // Coil
-    implementation 'io.coil-kt:coil-compose:2.0.0-rc02'
+    implementation 'io.coil-kt:coil-compose:2.5.0'
+    implementation "io.coil-kt:coil-gif:2.5.0"
 
     // Compose Destinations
     implementation 'io.github.raamcosta.compose-destinations:core:1.9.55'
