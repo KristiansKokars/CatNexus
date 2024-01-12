@@ -52,7 +52,6 @@ class AndroidFileStorage @Inject constructor(
 
             val newImageUri = resolver.insert(imageCollection, newImageDetails) ?: return Err(Unit)
             writeImageToFileFromUrl(resolver, newImageUri, url, mimeType)
-            newImageDetails.clear()
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 newImageDetails.put(MediaStore.Images.Media.IS_PENDING, 0)
