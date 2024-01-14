@@ -4,7 +4,7 @@ buildscript {
         compose_compiler_version = '1.5.3'
     }
     dependencies {
-        classpath 'com.google.dagger:hilt-android-gradle-plugin:2.48'
+        classpath 'com.google.dagger:hilt-android-gradle-plugin:2.50'
         classpath "org.jetbrains.kotlin:kotlin-serialization:1.9.10"
     }
 }
