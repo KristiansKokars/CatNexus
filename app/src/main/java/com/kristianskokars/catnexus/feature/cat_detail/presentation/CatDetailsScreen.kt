@@ -120,7 +120,7 @@ fun CatDetailsContent(
                         )
                     }
                     Row(
-                        modifier = Modifier.padding(end = 16.dp),
+                        modifier = Modifier.padding(end = 24.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(text = "${(zoomScale * 100).roundToDecimalPlaces(2)}%", fontSize = 16.sp)
@@ -233,6 +233,8 @@ private fun IconButton(
     }
 }
 
+private fun Float.roundToDecimalPlaces(places: Int) = ((this * 10 * places).toInt() / (10 * places))
+
 @Preview
 @Composable
 private fun CatDetailsScreenPreview() {
@@ -247,5 +249,3 @@ private fun CatDetailsScreenPreview() {
         ) {}
     }
 }
-
-private fun Float.roundToDecimalPlaces(places: Int) = ((this * 10 * places).toInt() / (10 * places))

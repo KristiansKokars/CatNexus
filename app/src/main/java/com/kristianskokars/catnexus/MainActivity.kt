@@ -7,8 +7,6 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.ui.Modifier
 import coil.ImageLoader
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 import com.kristianskokars.catnexus.core.presentation.components.BackgroundSurface
