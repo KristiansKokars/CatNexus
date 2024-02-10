@@ -1,10 +1,10 @@
 package com.kristianskokars.catnexus.core.presentation.theme
 
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.darkColors
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 
-private val DarkColorPalette = darkColors(
+private val DarkColorPalette = darkColorScheme(
     primary = Orange,
     surface = Black,
     background = Black,
@@ -16,7 +16,7 @@ fun SimpleCatAppTheme(content: @Composable () -> Unit) {
     val colors = DarkColorPalette
 
     MaterialTheme(
-        colors = colors,
+        colorScheme = colors,
         typography = Typography,
         shapes = Shapes,
         content = content,

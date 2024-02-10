@@ -12,12 +12,11 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.Icon
-import androidx.compose.material.LocalContentAlpha
-import androidx.compose.material.Text
-import androidx.compose.material.minimumInteractiveComponentSize
+import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -90,7 +89,9 @@ fun CatDetailsContent(
     onDownloadClick: () -> Unit
 ) {
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .safeContentPadding()
+            .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Row(
@@ -129,7 +130,7 @@ fun CatDetailsContent(
         Row(modifier = Modifier.defaultMinSize(minHeight = 48.dp)) {
             if (isDownloadPermissionGranted == false) {
                 Text(
-                    text = "Please grant the storage permission to download pictures!",
+                    text = stringResource(R.string.ask_for_storage_permission),
                     textAlign = TextAlign.Center,
                     fontSize = 12.sp,
                     color = Red
@@ -179,8 +180,9 @@ private fun IconButton(
             ),
         contentAlignment = Alignment.Center,
     ) {
-        val contentAlpha = if (enabled) LocalContentAlpha.current else ContentAlpha.disabled
-        CompositionLocalProvider(LocalContentAlpha provides contentAlpha, content = content)
+//        val contentAlpha = if (enabled) LocalContentAlpha.current else ContentAlpha.disabled
+//        CompositionLocalProvider(LocalContentAlpha provides contentAlpha, content = content)
+        content()
     }
 }
 

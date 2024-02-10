@@ -1,7 +1,10 @@
 package com.kristianskokars.catnexus.feature.cat_list.presentation.components
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -22,8 +25,15 @@ import com.kristianskokars.catnexus.core.domain.model.Cat
 private fun LazyGridState.isScrolledToEnd() = layoutInfo.visibleItemsInfo.lastOrNull()?.index == layoutInfo.totalItemsCount - 1
 
 @Composable
-fun CatGrid(cats: List<Cat>, onCatClick: (Cat) -> Unit, bottomSlot: @Composable () -> Unit = {}, onScrolledToBottom: () -> Unit = {}) {
-    val state = rememberLazyGridState()
+fun CatGrid(
+    modifier: Modifier = Modifier,
+    cats: List<Cat>,
+    onCatClick: (Cat) -> Unit,
+    state: LazyGridState,
+    topContentPadding: PaddingValues,
+    bottomSlot: @Composable () -> Unit = {},
+    onScrolledToBottom: () -> Unit = {}
+) {
     val currentOnScrolledToBottom by rememberUpdatedState(onScrolledToBottom)
     val endOfListReached by remember {
         derivedStateOf {
@@ -37,10 +47,13 @@ fun CatGrid(cats: List<Cat>, onCatClick: (Cat) -> Unit, bottomSlot: @Composable 
     }
 
     LazyVerticalGrid(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         state = state,
         columns = GridCells.Fixed(3),
     ) {
+        item(span = { GridItemSpan(3)}) {
+            Box(modifier = Modifier.padding(topContentPadding))
+        }
         items(cats, key = { it.id }) { cat ->
             CatCard(
                 modifier = Modifier

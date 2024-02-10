@@ -14,4 +14,5 @@
     <string name="retry">Retry</string>
     <string name="no_cats_found">No cats found from the server :(</string>
     <string name="error_unexpected_error">Unexpected error: %s</string>
+    <string name="ask_for_storage_permission">Please grant the storage permission to download pictures!</string>
 </resources>
