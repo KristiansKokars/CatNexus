@@ -70,7 +70,7 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-runtime-compose:2.7.0'
 
     // Accompanist
-    implementation 'com.google.accompanist:accompanist-swiperefresh:0.32.0'
+    implementation 'com.google.accompanist:accompanist-swiperefresh:0.34.0'
 
     // Retrofit
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
