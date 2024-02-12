@@ -1,6 +1,5 @@
 package com.kristianskokars.catnexus.feature.cat_detail.presentation
 
-import android.annotation.SuppressLint
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -22,6 +21,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -92,7 +93,6 @@ fun CatDetailsScreen(
     )
 }
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter") // we do not want the padding due to the navbar
 @Composable
 fun CatDetailsContent(
     cat: Cat,
@@ -102,7 +102,13 @@ fun CatDetailsContent(
     onDownloadClick: () -> Unit
 ) {
     val hazeState = remember { HazeState() }
+    val configuration = LocalConfiguration.current
     var zoomScale by remember { mutableFloatStateOf(1f) }
+    val isInLandscape by remember {
+        derivedStateOf {
+            configuration.screenWidthDp > configuration.screenHeightDp
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -136,12 +142,15 @@ fun CatDetailsContent(
                 }
             }
         }
-    ) {
+    ) { padding ->
         Column(
-            modifier = Modifier.haze(
-                state = hazeState,
-                style = HazeStyle(tint = Black.copy(alpha = 0.72f), blurRadius = 24.dp)
-            ).fillMaxSize(),
+            modifier = Modifier
+                .haze(
+                    state = hazeState,
+                    style = HazeStyle(tint = Black.copy(alpha = 0.72f), blurRadius = 24.dp)
+                )
+                .then(if (isInLandscape) Modifier.padding(padding) else Modifier)
+                .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             ZoomableBox(
