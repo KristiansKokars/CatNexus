@@ -41,7 +41,6 @@ import com.kristianskokars.catnexus.feature.appDestination
 import com.kristianskokars.catnexus.feature.cat_list.presentation.components.CatGrid
 import com.kristianskokars.catnexus.feature.destinations.CatDetailsScreenDestination
 import com.kristianskokars.catnexus.feature.destinations.FavouritesScreenDestination
-import com.kristianskokars.catnexus.lib.navigateToBottomBarDestination
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -136,7 +135,7 @@ private fun CatListContent(
                hazeState = hazeState,
                currentDestination = BottomBarDestination.HOME,
                onHomeClick = { /* Ignored */ },
-               onFavouritesClick = { navigator.navigateToBottomBarDestination(FavouritesScreenDestination) }
+               onFavouritesClick = { navigator.navigate(FavouritesScreenDestination)}
            )
         }
     ) { padding ->

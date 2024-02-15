@@ -38,10 +38,10 @@ import com.kristianskokars.catnexus.feature.appDestination
 import com.kristianskokars.catnexus.feature.cat_list.presentation.components.CatGrid
 import com.kristianskokars.catnexus.feature.destinations.CatDetailsScreenDestination
 import com.kristianskokars.catnexus.feature.destinations.CatListScreenDestination
-import com.kristianskokars.catnexus.lib.navigateToBottomBarDestination
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
+import com.ramcosta.composedestinations.navigation.popUpTo
 import com.ramcosta.composedestinations.spec.DestinationStyle
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
@@ -128,7 +128,7 @@ private fun Content(
             CatNexusBottomBar(
                 hazeState = hazeState,
                 currentDestination = BottomBarDestination.FAVOURITES,
-                onHomeClick = { navigator.navigateToBottomBarDestination(CatListScreenDestination) },
+                onHomeClick = { navigator.navigate(CatListScreenDestination) },
                 onFavouritesClick = { /* IGNORED */ }
             )
         }
@@ -155,7 +155,11 @@ private fun Content(
                                 .getStringAnnotations("navigate", offset, offset)
                                 .firstOrNull()?.item ?: return@ClickableText
 
-                            navigator.navigateToBottomBarDestination(CatListScreenDestination)
+                            // TODO: fix screen reloading due to bottom bars
+                            navigator.navigate(CatListScreenDestination) {
+                                launchSingleTop = true
+                                popUpTo(CatListScreenDestination) { inclusive = true }
+                            }
                         }
                     )
                 }
