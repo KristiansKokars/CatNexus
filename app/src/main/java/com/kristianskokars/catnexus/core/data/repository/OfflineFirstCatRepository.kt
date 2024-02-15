@@ -20,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -32,6 +33,8 @@ class OfflineFirstCatRepository(
 ) : CatRepository {
     private val scope = CoroutineScope(ioDispatcher)
     override val cats: Flow<List<Cat>> = local.getCats().flowOn(ioDispatcher)
+
+    override fun getFavouritedCats(): Flow<List<Cat>> = local.getFavouritedCats()
 
     override suspend fun refreshCats(shouldClearPrevious: Boolean) =
         try {
@@ -74,6 +77,13 @@ class OfflineFirstCatRepository(
                 ExistingWorkPolicy.KEEP,
                 downloadRequest,
             )
+        }
+    }
+
+    override fun toggleFavouriteForCat(id: String) {
+        scope.launch {
+            val cat = local.getCat(id).first()
+            local.updateCat(cat.copy(isFavourited = !cat.isFavourited))
         }
     }
 }
