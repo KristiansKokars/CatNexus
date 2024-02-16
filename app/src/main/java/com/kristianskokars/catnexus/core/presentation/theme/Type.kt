@@ -8,7 +8,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.kristianskokars.catnexus.R
 
-val Inter = FontFamily(Font(R.font.inter))
+val Inter = FontFamily(
+    Font(R.font.inter_regular),
+    Font(R.font.inter_medium, weight = FontWeight.Medium),
+)
 
 val Typography = Typography(
     bodyMedium = TextStyle(

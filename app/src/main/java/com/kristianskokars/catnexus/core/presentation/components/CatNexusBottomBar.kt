@@ -18,6 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.kristianskokars.catnexus.R
 import com.kristianskokars.catnexus.core.presentation.theme.Black
+import com.kristianskokars.catnexus.core.presentation.theme.Inter
 import com.kristianskokars.catnexus.core.presentation.theme.Orange
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeChild
@@ -59,7 +60,7 @@ fun CatNexusBottomBar(
                             contentDescription = null
                         )
                     },
-                    label = { Text(text = stringResource(R.string.home)) }
+                    label = { Text(text = stringResource(R.string.home), fontFamily = Inter) }
                 )
                 NavigationBarItem(
                     colors = bottomBarColors,
@@ -71,7 +72,7 @@ fun CatNexusBottomBar(
                             contentDescription = null
                         )
                     },
-                    label = { Text(text = stringResource(R.string.favourites)) }
+                    label = { Text(text = stringResource(R.string.favourites), fontFamily = Inter) }
                 )
             }
         }
