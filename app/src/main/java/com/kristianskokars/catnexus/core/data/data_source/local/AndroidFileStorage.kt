@@ -14,6 +14,7 @@ import com.kristianskokars.catnexus.core.domain.repository.FileStorage
 import com.kristianskokars.catnexus.lib.Err
 import com.kristianskokars.catnexus.lib.Ok
 import com.kristianskokars.catnexus.lib.Result
+import com.kristianskokars.catnexus.lib.mimeTypeFromImageUrl
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.sentry.Sentry
 import timber.log.Timber
@@ -32,7 +33,7 @@ class AndroidFileStorage @Inject constructor(
     override suspend fun downloadImage(url: String, fileName: String): Result<Unit, Uri> {
         try {
             val resolver = context.contentResolver
-            val mimeType = mimeTypeFromUrl(url)
+            val mimeType = mimeTypeFromImageUrl(url)
 
             val imageCollection =
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -104,14 +105,5 @@ class AndroidFileStorage @Inject constructor(
             )
             .build()
         imageLoader.enqueue(request)
-    }
-
-    // we are assuming the given file will always be an image type
-    private fun mimeTypeFromUrl(url: String): String {
-        val extension = url.split(".").last().lowercase()
-        return when (extension) {
-            "gif" -> "image/gif"
-            else -> "image/jpeg"
-        }
     }
 }

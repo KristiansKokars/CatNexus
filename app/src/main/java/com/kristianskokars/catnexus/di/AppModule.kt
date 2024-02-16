@@ -10,6 +10,7 @@ import coil.decode.ImageDecoderDecoder
 import com.kristianskokars.catnexus.core.BASE_URL
 import com.kristianskokars.catnexus.core.CAT_DATABASE
 import com.kristianskokars.catnexus.core.data.data_source.local.AndroidFileStorage
+import com.kristianskokars.catnexus.core.data.data_source.local.AndroidImageSharer
 import com.kristianskokars.catnexus.core.data.data_source.local.CatDao
 import com.kristianskokars.catnexus.core.data.data_source.local.CatDatabase
 import com.kristianskokars.catnexus.core.data.data_source.remote.CatAPI
@@ -17,11 +18,14 @@ import com.kristianskokars.catnexus.core.data.data_source.remote.NetworkClient
 import com.kristianskokars.catnexus.core.data.repository.OfflineFirstCatRepository
 import com.kristianskokars.catnexus.core.domain.repository.CatRepository
 import com.kristianskokars.catnexus.core.domain.repository.FileStorage
+import com.kristianskokars.catnexus.core.domain.repository.ImageSharer
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.ExperimentalSerializationApi
 import retrofit2.Retrofit
 import javax.inject.Singleton
@@ -78,4 +82,8 @@ object AppModule {
     @Provides
     @Singleton
     fun provideFileStorage(androidFileStorage: AndroidFileStorage): FileStorage = androidFileStorage
+
+    @Provides
+    @Singleton
+    fun provideImageSharer(@ApplicationContext context: Context): ImageSharer = AndroidImageSharer(context, CoroutineScope(Dispatchers.IO))
 }
