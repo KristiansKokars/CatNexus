@@ -8,7 +8,9 @@ import kotlinx.coroutines.flow.Flow
 
 interface CatRepository {
     val cats: Flow<List<Cat>>
+    fun getFavouritedCats(): Flow<List<Cat>>
     fun getCat(id: String): Flow<Cat>
     fun saveCatImage(cat: Cat)
+    fun toggleFavouriteForCat(id: String)
     suspend fun refreshCats(shouldClearPrevious: Boolean = false): Result<ServerError, Success>
 }

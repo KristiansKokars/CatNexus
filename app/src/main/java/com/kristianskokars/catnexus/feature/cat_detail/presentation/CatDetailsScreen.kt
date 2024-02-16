@@ -9,12 +9,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -43,13 +41,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.kristianskokars.catnexus.R
 import com.kristianskokars.catnexus.core.domain.model.Cat
 import com.kristianskokars.catnexus.core.presentation.components.BackgroundSurface
-import com.kristianskokars.catnexus.core.presentation.components.CatNexusTopBar
+import com.kristianskokars.catnexus.core.presentation.components.CatNexusTopBarLayout
 import com.kristianskokars.catnexus.core.presentation.components.ZoomableBox
 import com.kristianskokars.catnexus.core.presentation.theme.Black
 import com.kristianskokars.catnexus.core.presentation.theme.Orange
@@ -71,6 +70,7 @@ fun CatDetailsScreen(
     imageLoader: ImageLoader,
 ) {
     val context = LocalContext.current
+    val cat by viewModel.cat.collectAsStateWithLifecycle()
     var isDownloadPermissionGranted by remember {
         mutableStateOf(isPermissionToSavePicturesGranted(context))
     }
@@ -85,11 +85,12 @@ fun CatDetailsScreen(
     }
 
     CatDetailsContent(
-        cat = viewModel.cat,
+        cat = cat,
         navigator = navigator,
         onDownloadClick = { askForStoragePermissionIfOnOlderAndroid(context, launcher, viewModel::saveCat) },
         imageLoader = imageLoader,
         isDownloadPermissionGranted = isDownloadPermissionGranted,
+        onFavouriteClick = viewModel::toggleFavouriteCat
     )
 }
 
@@ -99,7 +100,8 @@ fun CatDetailsContent(
     navigator: DestinationsNavigator,
     imageLoader: ImageLoader,
     isDownloadPermissionGranted: Boolean?,
-    onDownloadClick: () -> Unit
+    onDownloadClick: () -> Unit,
+    onFavouriteClick: () -> Unit,
 ) {
     val hazeState = remember { HazeState() }
     val configuration = LocalConfiguration.current
@@ -112,7 +114,7 @@ fun CatDetailsContent(
 
     Scaffold(
         topBar = {
-            CatNexusTopBar(hazeState = hazeState, isBorderVisible = zoomScale != 1f) {
+            CatNexusTopBarLayout(hazeState = hazeState, isBorderVisible = zoomScale != 1f) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -128,16 +130,27 @@ fun CatDetailsContent(
                         )
                     }
                     Row(
-                        modifier = Modifier.padding(end = 24.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(text = "${(zoomScale * 100).roundToDecimalPlaces(2)}%", fontSize = 16.sp)
-                        Spacer(modifier = Modifier.size(4.dp))
-                        Icon(
-                            modifier = Modifier.size(24.dp),
-                            painter = painterResource(id = R.drawable.ic_magnifying_glass),
-                            contentDescription = null
-                        )
+                        Row(
+                            modifier = Modifier.padding(end = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            IconButton(onClick = onFavouriteClick) {
+                                if (cat.isFavourited) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_favourite_filled),
+                                        tint = Orange,
+                                        contentDescription = stringResource(R.string.unfavourite_cat),
+                                    )
+                                } else {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_favourite),
+                                        contentDescription = stringResource(R.string.favourite_cat)
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -259,7 +272,9 @@ private fun CatDetailsScreenPreview() {
             cat = Cat(id = "cat", url = "cat", name = "cat", fetchedDateInMillis = 0),
             navigator = EmptyDestinationsNavigator,
             imageLoader = ImageLoader.Builder(context).build(),
-            isDownloadPermissionGranted = null
-        ) {}
+            isDownloadPermissionGranted = null,
+            onDownloadClick = {},
+            onFavouriteClick = {}
+        )
     }
 }

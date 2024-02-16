@@ -1,49 +1,45 @@
-package com.kristianskokars.catnexus.feature.cat_list.presentation
+package com.kristianskokars.catnexus.feature.favourites.presentation
 
-import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.material3.Icon
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavBackStackEntry
-import com.kristianskokars.catnexus.R
 import com.kristianskokars.catnexus.core.presentation.components.BackgroundSurface
 import com.kristianskokars.catnexus.core.presentation.components.BottomBarDestination
 import com.kristianskokars.catnexus.core.presentation.components.CatNexusBottomBar
-import com.kristianskokars.catnexus.core.presentation.components.CatNexusTopBarLayout
-import com.kristianskokars.catnexus.core.presentation.components.ErrorGettingCats
+import com.kristianskokars.catnexus.core.presentation.components.CatNexusDefaultTopBar
 import com.kristianskokars.catnexus.core.presentation.components.LoadingCats
-import com.kristianskokars.catnexus.core.presentation.components.LoadingSpinner
 import com.kristianskokars.catnexus.core.presentation.theme.Black
 import com.kristianskokars.catnexus.core.presentation.theme.Orange
 import com.kristianskokars.catnexus.feature.appDestination
 import com.kristianskokars.catnexus.feature.cat_list.presentation.components.CatGrid
 import com.kristianskokars.catnexus.feature.destinations.CatDetailsScreenDestination
-import com.kristianskokars.catnexus.feature.destinations.FavouritesScreenDestination
+import com.kristianskokars.catnexus.feature.destinations.CatListScreenDestination
 import com.kristianskokars.catnexus.lib.navigateToBottomBarDestination
 import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
 import com.ramcosta.composedestinations.spec.DestinationStyle
@@ -51,100 +47,120 @@ import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.haze
 
-object HomeTransitions : DestinationStyle.Animated {
+object FavouritesTransitions : DestinationStyle.Animated {
     override fun AnimatedContentTransitionScope<NavBackStackEntry>.enterTransition(): EnterTransition? {
         return when (initialState.appDestination()) {
-            FavouritesScreenDestination -> EnterTransition.None
+            CatListScreenDestination -> EnterTransition.None
             else -> null
         }
     }
 
     override fun AnimatedContentTransitionScope<NavBackStackEntry>.popEnterTransition(): EnterTransition? {
         return when (initialState.appDestination()) {
-            FavouritesScreenDestination -> EnterTransition.None
+            CatListScreenDestination -> EnterTransition.None
             else -> null
         }
     }
 
     override fun AnimatedContentTransitionScope<NavBackStackEntry>.exitTransition(): ExitTransition? {
         return when (targetState.appDestination()) {
-            FavouritesScreenDestination -> ExitTransition.None
+            CatListScreenDestination -> ExitTransition.None
             else -> null
         }
     }
 
     override fun AnimatedContentTransitionScope<NavBackStackEntry>.popExitTransition(): ExitTransition? {
         return when (targetState.appDestination()) {
-            FavouritesScreenDestination -> ExitTransition.None
+            CatListScreenDestination -> ExitTransition.None
             else -> null
         }
     }
 }
 
-@Destination(style = HomeTransitions::class)
-@RootNavGraph(start = true)
+@Destination(style = FavouritesTransitions::class)
 @Composable
-fun CatListScreen(
-    viewModel: CatListViewModel = hiltViewModel(),
-    navigator: DestinationsNavigator,
+fun FavouritesScreen(
+    viewModel: FavouritesViewModel = hiltViewModel(),
+    navigator: DestinationsNavigator
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    CatListContent(
-        state = state,
+    Content(
         navigator = navigator,
-        onFetchMoreCats = viewModel::fetchCats,
-        onRetry = viewModel::retryFetch,
+        state = state
     )
 }
 
 @Composable
-private fun CatListContent(
-    state: CatListState,
+private fun Content(
     navigator: DestinationsNavigator,
-    onFetchMoreCats: () -> Unit,
-    onRetry: () -> Unit,
+    state: FavouritesState,
 ) {
     val hazeState = remember { HazeState() }
     val lazyGridState = rememberLazyGridState()
+    val noFavouriteString = buildAnnotatedString {
+        var start = 0
+        var end = 0
+
+        withStyle(style = SpanStyle(color = White)) {
+            append("No favourites added yet. Head to")
+        }
+        withStyle(style = SpanStyle(color = Orange)) {
+            start = length
+            append(" home ")
+            end = length
+        }
+        withStyle(style = SpanStyle(color = White)) {
+            append("and add some!")
+        }
+
+        addStringAnnotation("navigate", "home", start, end)
+    }
 
     Scaffold(
         topBar = {
-            CatNexusTopBarLayout(
+            CatNexusDefaultTopBar(
                 hazeState = hazeState,
                 isBorderVisible = lazyGridState.canScrollBackward
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_cat_large),
-                        contentDescription = null,
-                        tint = Orange,
-                    )
-                    Text(
-                        modifier = Modifier.padding(8.dp),
-                        text = stringResource(R.string.cat_infinity),
-                        fontSize = 24.sp,
-                    )
-                }
-            }
+            )
         },
         bottomBar = {
-           CatNexusBottomBar(
-               hazeState = hazeState,
-               currentDestination = BottomBarDestination.HOME,
-               onHomeClick = { /* Ignored */ },
-               onFavouritesClick = { navigator.navigateToBottomBarDestination(FavouritesScreenDestination) }
-           )
+            CatNexusBottomBar(
+                hazeState = hazeState,
+                currentDestination = BottomBarDestination.FAVOURITES,
+                onHomeClick = { navigator.navigateToBottomBarDestination(CatListScreenDestination) },
+                onFavouritesClick = { /* IGNORED */ }
+            )
         }
     ) { padding ->
         Column(
-            modifier = Modifier.padding(horizontal = 8.dp).padding(bottom = padding.calculateBottomPadding())
+            modifier = Modifier
+                .padding(horizontal = 8.dp)
+                .padding(bottom = padding.calculateBottomPadding())
         ) {
-            when (state) {
-                is CatListState.Loaded -> CatGrid(
+            if (state.cats == null) {
+                LoadingCats()
+            } else if (state.cats.isEmpty()) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    ClickableText(
+                        modifier = Modifier.padding(top = padding.calculateTopPadding()).padding(48.dp),
+                        text = noFavouriteString,
+                        style = TextStyle.Default.copy(textAlign = TextAlign.Center),
+                        onClick = { offset ->
+                            noFavouriteString
+                                .getStringAnnotations("navigate", offset, offset)
+                                .firstOrNull()?.item ?: return@ClickableText
+
+                            navigator.navigateToBottomBarDestination(CatListScreenDestination)
+                        }
+                    )
+                }
+            } else {
+                CatGrid(
                     modifier = Modifier
                         .haze(
                             state = hazeState,
@@ -154,41 +170,20 @@ private fun CatListContent(
                     state = lazyGridState,
                     cats = state.cats,
                     onCatClick = { navigator.navigate(CatDetailsScreenDestination(it)) },
-                    bottomSlot = {
-                        Row(
-                            modifier = Modifier
-                                .padding(vertical = 12.dp)
-                                .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            if (state.hasError != null) {
-                                ErrorGettingCats(onRetry)
-                            } else {
-                                LoadingSpinner()
-                            }
-                        }
-                    },
-                    onScrolledToBottom = onFetchMoreCats,
                 )
-                is CatListState.Error -> ErrorGettingCats(onRetry)
-                CatListState.Loading -> LoadingCats()
-                CatListState.NoCats -> Text(text = stringResource(R.string.no_cats_found))
             }
+
         }
     }
-
 }
 
-@Preview(uiMode = UI_MODE_NIGHT_YES)
+@Preview
 @Composable
-private fun CatListContentPreview() {
+private fun Preview() {
     BackgroundSurface {
-        CatListContent(
-            state = CatListState.Loading,
+        Content(
             navigator = EmptyDestinationsNavigator,
-            onFetchMoreCats = {},
-            onRetry = {},
+            state = FavouritesState()
         )
     }
 }

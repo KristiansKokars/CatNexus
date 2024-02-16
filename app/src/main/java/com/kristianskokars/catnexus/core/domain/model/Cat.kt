@@ -16,4 +16,5 @@ data class Cat(
     val url: String,
     val name: String?,
     val fetchedDateInMillis: Long,
+    val isFavourited: Boolean = false,
 ) : Parcelable

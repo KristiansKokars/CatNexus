@@ -5,7 +5,11 @@ import androidx.lifecycle.viewModelScope
 import com.kristianskokars.catnexus.core.domain.model.ServerError
 import com.kristianskokars.catnexus.core.domain.repository.CatRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -33,7 +37,7 @@ class CatListViewModel @Inject constructor(
             }
         }
     }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), CatListState.Loading)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), CatListState.Loading)
 
     init {
         fetchCats(clearPreviousCats = true)

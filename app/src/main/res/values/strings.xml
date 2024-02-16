@@ -15,4 +15,8 @@
     <string name="no_cats_found">No cats found from the server :(</string>
     <string name="error_unexpected_error">Unexpected error: %s</string>
     <string name="ask_for_storage_permission">Please grant the storage permission to download pictures!</string>
+    <string name="unfavourite_cat">Unfavourite Cat</string>
+    <string name="favourite_cat">Favourite Cat</string>
+    <string name="home">Home</string>
+    <string name="favourites">Favourites</string>
 </resources>
