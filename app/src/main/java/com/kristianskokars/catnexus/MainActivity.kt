@@ -25,7 +25,11 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterialNavigationApi::class, ExperimentalAnimationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge(statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT))
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.dark(resources.getColor(R.color.black, null))
+        )
+
         setContent {
             BackgroundSurface {
                 DestinationsNavHost(
