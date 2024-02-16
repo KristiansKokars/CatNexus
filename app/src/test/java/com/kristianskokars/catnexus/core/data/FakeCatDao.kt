@@ -6,12 +6,14 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
-import java.lang.RuntimeException
 
 class FakeCatDao : CatDao {
     private val storedCats = MutableStateFlow<List<Cat>>(emptyList())
 
     override fun getCats() = storedCats
+    override fun getFavouritedCats(): Flow<List<Cat>> = storedCats.map { cats ->
+        cats.filter { it.isFavourited }
+    }
 
     override fun getCat(catId: String): Flow<Cat> = storedCats.map { cats ->
         cats.find { it.id == catId } ?: throw RuntimeException("Cat not found")
@@ -32,5 +34,15 @@ class FakeCatDao : CatDao {
         storedCats.update { storedCats ->
             storedCats.filter { it.id in catIds }
         }
+    }
+
+    override suspend fun updateCat(cat: Cat) {
+       storedCats.update { storedCats ->
+           val index = storedCats.indexOfFirst { it.id == cat.id }.takeIf { it != -1 } ?: return@update storedCats
+           val newStoredCats = storedCats.toMutableList()
+           newStoredCats.removeAt(index)
+           newStoredCats.add(index, cat)
+           newStoredCats
+       }
     }
 }
