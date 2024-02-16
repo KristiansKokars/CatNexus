@@ -33,6 +33,16 @@
             android:authorities="${applicationId}.androidx-startup"
             tools:node="remove" />
 
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.kristianskokars.catnexus.fileprovider"
+            android:grantUriPermissions="true"
+            android:exported="false">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/filepaths" />
+        </provider>
+
         <service
             android:name="androidx.work.impl.foreground.SystemForegroundService"
             android:foregroundServiceType="shortService"
