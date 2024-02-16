@@ -14,6 +14,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
@@ -76,10 +77,24 @@ fun ZoomableBox(
             scale.value,
             offsetX.value,
             offsetY.value,
-            zoomToDefault = {
-                coroutineScope.launch { scale.animateTo(1f, tween(300)) }
-                coroutineScope.launch { offsetX.animateTo(0f, tween(300)) }
-                coroutineScope.launch { offsetY.animateTo(0f, tween(300)) }
+            zoomInOrOut = { position ->
+                coroutineScope.launch {
+                    if (scale.value == 1f) {
+                        scale.animateTo(3f, tween(300))
+                    } else {
+                        scale.animateTo(1f, tween(300))
+                    }
+                }
+                coroutineScope.launch {
+                    if (scale.value != 1f) {
+                        offsetX.animateTo(0f, tween(300))
+                    }
+                }
+                coroutineScope.launch {
+                    if (scale.value != 1f) {
+                        offsetY.animateTo(0f, tween(300))
+                    }
+                }
             },
             this
         )
@@ -91,13 +106,13 @@ interface ZoomableBoxScope : BoxScope {
     val scale: Float
     val offsetX: Float
     val offsetY: Float
-    val zoomToDefault: () -> Unit
+    val zoomInOrOut: (position: Offset) -> Unit
 }
 
 private data class ZoomableBoxScopeImpl(
     override val scale: Float,
     override val offsetX: Float,
     override val offsetY: Float,
-    override val zoomToDefault: () -> Unit,
+    override val zoomInOrOut: (position: Offset) -> Unit,
     val boxScope: BoxScope,
 ) : ZoomableBoxScope, BoxScope by boxScope
