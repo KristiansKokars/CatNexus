@@ -52,6 +52,7 @@ import com.kristianskokars.catnexus.core.domain.model.Cat
 import com.kristianskokars.catnexus.core.presentation.DefaultHazeStyle
 import com.kristianskokars.catnexus.core.presentation.components.BackgroundSurface
 import com.kristianskokars.catnexus.core.presentation.components.CatNexusTopBarLayout
+import com.kristianskokars.catnexus.core.presentation.components.LoadingSpinner
 import com.kristianskokars.catnexus.core.presentation.components.ZoomableBox
 import com.kristianskokars.catnexus.core.presentation.theme.Orange
 import com.kristianskokars.catnexus.core.presentation.theme.Red
@@ -73,6 +74,7 @@ fun CatDetailsScreen(
 ) {
     val context = LocalContext.current
     val cat by viewModel.cat.collectAsStateWithLifecycle()
+    val isCatDownloading by viewModel.isCatDownloading.collectAsStateWithLifecycle(initialValue = false)
     var isDownloadPermissionGranted by remember {
         mutableStateOf(isPermissionToSavePicturesGranted(context))
     }
@@ -88,6 +90,7 @@ fun CatDetailsScreen(
 
     CatDetailsContent(
         cat = cat,
+        isCatDownloading = isCatDownloading,
         navigator = navigator,
         onDownloadClick = { askForStoragePermissionIfOnOlderAndroid(context, launcher, viewModel::saveCat) },
         imageLoader = imageLoader,
@@ -100,6 +103,7 @@ fun CatDetailsScreen(
 @Composable
 fun CatDetailsContent(
     cat: Cat,
+    isCatDownloading: Boolean,
     navigator: DestinationsNavigator,
     imageLoader: ImageLoader,
     isDownloadPermissionGranted: Boolean?,
@@ -187,7 +191,8 @@ fun CatDetailsContent(
                     .hazeChild(pictureHazeState, shape = CircleShape)
                     .padding(8.dp)
                     .align(Alignment.BottomCenter),
-                horizontalArrangement = Arrangement.Center
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 IconButton(onClick = onFavouriteClick) {
                     if (cat.isFavourited) {
@@ -204,20 +209,24 @@ fun CatDetailsContent(
                     }
                 }
                 Spacer(modifier = Modifier.size(16.dp))
-                IconButton(
-                    onClick = {
-                          if (isDownloadPermissionGranted == false) {
-                              Toast.makeText(context, R.string.ask_for_storage_permission, Toast.LENGTH_SHORT).show()
-                          } else {
-                              onDownloadClick()
-                          }
-                    },
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_download),
-                        contentDescription = stringResource(R.string.save_cat),
-                        tint = if (isDownloadPermissionGranted == false) Red else Color.White,
-                    )
+                if (isCatDownloading) {
+                    LoadingSpinner(modifier = Modifier.padding(12.dp).size(24.dp))
+                } else {
+                    IconButton(
+                        onClick = {
+                            if (isDownloadPermissionGranted == false) {
+                                Toast.makeText(context, R.string.ask_for_storage_permission, Toast.LENGTH_SHORT).show()
+                            } else {
+                                onDownloadClick()
+                            }
+                        },
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_download),
+                            contentDescription = stringResource(R.string.save_cat),
+                            tint = if (isDownloadPermissionGranted == false) Red else Color.White,
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.size(16.dp))
                 IconButton(
@@ -268,6 +277,7 @@ private fun CatDetailsScreenPreview() {
     BackgroundSurface {
         CatDetailsContent(
             cat = Cat(id = "cat", url = "cat", name = "cat", fetchedDateInMillis = 0),
+            isCatDownloading = true,
             navigator = EmptyDestinationsNavigator,
             imageLoader = ImageLoader.Builder(context).build(),
             isDownloadPermissionGranted = null,

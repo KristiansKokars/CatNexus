@@ -4,6 +4,7 @@ import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.kristianskokars.catnexus.core.data.data_source.local.CatDao
@@ -22,6 +23,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -59,6 +61,7 @@ class OfflineFirstCatRepository(
         scope.launch {
             val fileName = "cat${cat.id}"
             val downloadRequest = OneTimeWorkRequestBuilder<DownloadImageWorker>()
+                .addTag(cat.id)
                 .setConstraints(
                     Constraints.Builder()
                         .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -84,6 +87,14 @@ class OfflineFirstCatRepository(
         scope.launch {
             val cat = local.getCat(id).first()
             local.updateCat(cat.copy(isFavourited = !cat.isFavourited))
+        }
+    }
+
+    override fun isCatDownloading(catId: String): Flow<Boolean> {
+        return workManager.getWorkInfosByTagFlow(catId).map {
+            if (it.isNotEmpty()) {
+                it[0].state == WorkInfo.State.RUNNING
+            } else false
         }
     }
 }

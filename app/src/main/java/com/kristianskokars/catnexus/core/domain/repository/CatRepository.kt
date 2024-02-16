@@ -12,5 +12,6 @@ interface CatRepository {
     fun getCat(id: String): Flow<Cat>
     fun saveCatImage(cat: Cat)
     fun toggleFavouriteForCat(id: String)
+    fun isCatDownloading(catId: String): Flow<Boolean>
     suspend fun refreshCats(shouldClearPrevious: Boolean = false): Result<ServerError, Success>
 }

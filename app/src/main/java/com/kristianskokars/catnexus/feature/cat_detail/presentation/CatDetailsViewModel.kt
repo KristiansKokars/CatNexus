@@ -7,7 +7,9 @@ import com.kristianskokars.catnexus.core.domain.model.Cat
 import com.kristianskokars.catnexus.core.domain.repository.CatRepository
 import com.kristianskokars.catnexus.core.domain.repository.ImageSharer
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -20,6 +22,8 @@ class CatDetailsViewModel @Inject constructor(
 ) : ViewModel() {
     private val navArgCat = savedStateHandle.get<Cat>("cat")!!
     val cat = repository.getCat(navArgCat.id).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), navArgCat)
+    @OptIn(FlowPreview::class)
+    val isCatDownloading = repository.isCatDownloading(navArgCat.id).debounce(200)
 
     fun saveCat() {
         viewModelScope.launch {
