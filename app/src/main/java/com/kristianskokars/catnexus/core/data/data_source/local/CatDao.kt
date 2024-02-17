@@ -15,7 +15,7 @@ interface CatDao {
     @Query("SELECT * FROM $CAT_TABLE_NAME WHERE isFavourited = 0 ORDER BY fetchedDateInMillis ASC")
     fun getCats(): Flow<List<Cat>>
 
-    @Query("SELECT * FROM $CAT_TABLE_NAME WHERE isFavourited = 1 ORDER BY fetchedDateInMillis ASC")
+    @Query("SELECT * FROM $CAT_TABLE_NAME WHERE isFavourited = 1 ORDER BY fetchedDateInMillis DESC")
     fun getFavouritedCats(): Flow<List<Cat>>
 
     @Query("SELECT * FROM $CAT_TABLE_NAME WHERE id = :catId")
