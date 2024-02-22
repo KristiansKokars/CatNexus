@@ -6,11 +6,16 @@ import androidx.lifecycle.viewModelScope
 import com.kristianskokars.catnexus.core.domain.model.Cat
 import com.kristianskokars.catnexus.core.domain.repository.CatRepository
 import com.kristianskokars.catnexus.core.domain.repository.ImageSharer
+import com.kristianskokars.catnexus.feature.navArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -20,24 +25,49 @@ class CatDetailsViewModel @Inject constructor(
     private val imageSharer: ImageSharer,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    private val navArgCat = savedStateHandle.get<Cat>("cat")!!
-    val cat = repository.getCat(navArgCat.id).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), navArgCat)
-    @OptIn(FlowPreview::class)
-    val isCatDownloading = repository.isCatDownloading(navArgCat.id).debounce(200)
+    private val navArgs = savedStateHandle.navArgs<CatDetailsScreenNavArgs>()
+    private val showFavourites = navArgs.showFavourites
+    private val startingCatPageIndex = navArgs.catPageIndex
+    private val _page = MutableStateFlow(startingCatPageIndex)
+
+    val pageCount = repository.cats.map { it.size }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Int.MAX_VALUE)
+    val cats =
+        if (showFavourites)
+            repository.getFavouritedCats().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        else
+            repository.cats.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val isCatDownloading = combine(
+        repository.cats,
+        _page
+    ) { cats, page ->
+        cats[page].id
+    }
+        .flatMapLatest { repository.isCatDownloading(it) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     fun saveCat() {
         viewModelScope.launch {
-            repository.saveCatImage(cat.value)
+            repository.saveCatImage(currentCat())
         }
     }
 
     fun toggleFavouriteCat() {
         viewModelScope.launch {
-            repository.toggleFavouriteForCat(cat.value.id)
+            repository.toggleFavouriteForCat(currentCat().id)
         }
     }
 
     fun shareCat() {
-        imageSharer.shareImage(cat.value.url)
+        imageSharer.shareImage(currentCat().url)
+    }
+
+    fun onPageSelected(page: Int) {
+        _page.update { page }
+    }
+
+    private fun currentCat(): Cat {
+        return cats.value[_page.value]
     }
 }

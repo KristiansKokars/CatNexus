@@ -10,8 +10,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -28,7 +27,7 @@ private fun LazyGridState.isScrolledToEnd() = layoutInfo.visibleItemsInfo.lastOr
 fun CatGrid(
     modifier: Modifier = Modifier,
     cats: List<Cat>,
-    onCatClick: (Cat) -> Unit,
+    onCatClick: (index: Int) -> Unit,
     state: LazyGridState,
     topContentPadding: PaddingValues,
     bottomSlot: @Composable () -> Unit = {},
@@ -54,11 +53,11 @@ fun CatGrid(
         item(span = { GridItemSpan(3)}) {
             Box(modifier = Modifier.padding(topContentPadding))
         }
-        items(cats, key = { it.id }) { cat ->
+        itemsIndexed(cats, key = { _, cat -> cat.id }) { index, cat ->
             CatCard(
                 modifier = Modifier
                     .size(124.dp)
-                    .clickable { onCatClick(cat) },
+                    .clickable { onCatClick(index) },
                 cat = cat,
             )
         }

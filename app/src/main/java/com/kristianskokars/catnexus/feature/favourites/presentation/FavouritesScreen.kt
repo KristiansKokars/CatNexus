@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Scaffold
@@ -32,10 +33,12 @@ import com.kristianskokars.catnexus.core.presentation.components.BottomBarDestin
 import com.kristianskokars.catnexus.core.presentation.components.CatNexusBottomBar
 import com.kristianskokars.catnexus.core.presentation.components.CatNexusDefaultTopBar
 import com.kristianskokars.catnexus.core.presentation.components.LoadingCats
+import com.kristianskokars.catnexus.core.presentation.scrollToReturnedItemIndex
 import com.kristianskokars.catnexus.core.presentation.theme.Black
 import com.kristianskokars.catnexus.core.presentation.theme.Inter
 import com.kristianskokars.catnexus.core.presentation.theme.Orange
 import com.kristianskokars.catnexus.feature.appDestination
+import com.kristianskokars.catnexus.feature.cat_detail.presentation.CatDetailsScreenNavArgs
 import com.kristianskokars.catnexus.feature.cat_list.presentation.components.CatGrid
 import com.kristianskokars.catnexus.feature.destinations.CatDetailsScreenDestination
 import com.kristianskokars.catnexus.feature.destinations.CatListScreenDestination
@@ -43,6 +46,7 @@ import com.kristianskokars.catnexus.lib.navigateToBottomBarDestination
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
+import com.ramcosta.composedestinations.result.ResultRecipient
 import com.ramcosta.composedestinations.spec.DestinationStyle
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
@@ -82,12 +86,17 @@ object FavouritesTransitions : DestinationStyle.Animated {
 @Composable
 fun FavouritesScreen(
     viewModel: FavouritesViewModel = hiltViewModel(),
-    navigator: DestinationsNavigator
+    navigator: DestinationsNavigator,
+    resultRecipient: ResultRecipient<CatDetailsScreenDestination, Int>
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val lazyGridState = rememberLazyGridState()
+
+    resultRecipient.scrollToReturnedItemIndex(lazyGridState = lazyGridState)
 
     Content(
         navigator = navigator,
+        lazyGridState = lazyGridState,
         state = state
     )
 }
@@ -95,10 +104,10 @@ fun FavouritesScreen(
 @Composable
 private fun Content(
     navigator: DestinationsNavigator,
+    lazyGridState: LazyGridState,
     state: FavouritesState,
 ) {
     val hazeState = remember { HazeState() }
-    val lazyGridState = rememberLazyGridState()
     val noFavouriteString = buildAnnotatedString {
         var start = 0
         var end = 0
@@ -148,7 +157,9 @@ private fun Content(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     ClickableText(
-                        modifier = Modifier.padding(top = padding.calculateTopPadding()).padding(48.dp),
+                        modifier = Modifier
+                            .padding(top = padding.calculateTopPadding())
+                            .padding(48.dp),
                         text = noFavouriteString,
                         style = TextStyle.Default.copy(textAlign = TextAlign.Center, fontFamily = Inter),
                         onClick = { offset ->
@@ -170,7 +181,11 @@ private fun Content(
                     topContentPadding = PaddingValues(top = padding.calculateTopPadding()),
                     state = lazyGridState,
                     cats = state.cats,
-                    onCatClick = { navigator.navigate(CatDetailsScreenDestination(it)) },
+                    onCatClick = {
+                        navigator.navigate(
+                            CatDetailsScreenDestination(CatDetailsScreenNavArgs(it, showFavourites = true))
+                        )
+                    },
                 )
             }
 
@@ -184,6 +199,7 @@ private fun Preview() {
     BackgroundSurface {
         Content(
             navigator = EmptyDestinationsNavigator,
+            lazyGridState = rememberLazyGridState(),
             state = FavouritesState()
         )
     }
