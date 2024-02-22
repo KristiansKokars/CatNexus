@@ -33,6 +33,7 @@ import com.kristianskokars.catnexus.core.presentation.components.CatNexusBottomB
 import com.kristianskokars.catnexus.core.presentation.components.CatNexusDefaultTopBar
 import com.kristianskokars.catnexus.core.presentation.components.LoadingCats
 import com.kristianskokars.catnexus.core.presentation.theme.Black
+import com.kristianskokars.catnexus.core.presentation.theme.Inter
 import com.kristianskokars.catnexus.core.presentation.theme.Orange
 import com.kristianskokars.catnexus.feature.appDestination
 import com.kristianskokars.catnexus.feature.cat_list.presentation.components.CatGrid
@@ -149,7 +150,7 @@ private fun Content(
                     ClickableText(
                         modifier = Modifier.padding(top = padding.calculateTopPadding()).padding(48.dp),
                         text = noFavouriteString,
-                        style = TextStyle.Default.copy(textAlign = TextAlign.Center),
+                        style = TextStyle.Default.copy(textAlign = TextAlign.Center, fontFamily = Inter),
                         onClick = { offset ->
                             noFavouriteString
                                 .getStringAnnotations("navigate", offset, offset)
