@@ -9,6 +9,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -114,7 +115,6 @@ fun CatDetailsContent(
     val hazeState = remember { HazeState() }
     val pictureHazeState = remember { HazeState() }
     val configuration = LocalConfiguration.current
-    val context = LocalContext.current
     var zoomScale by remember { mutableFloatStateOf(1f) }
     val isInLandscape by remember {
         derivedStateOf {
@@ -184,64 +184,89 @@ fun CatDetailsContent(
                     imageLoader = imageLoader,
                 )
             }
-            Row(
-                modifier = Modifier
-                    .padding(vertical = 24.dp, horizontal = 36.dp)
-                    .border(Dp.Hairline, Color.Gray.copy(alpha = 0.25f), CircleShape)
-                    .hazeChild(pictureHazeState, shape = CircleShape)
-                    .padding(8.dp)
-                    .align(Alignment.BottomCenter),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                IconButton(onClick = onFavouriteClick) {
-                    if (cat.isFavourited) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_favourite_filled),
-                            tint = Orange,
-                            contentDescription = stringResource(R.string.unfavourite_cat),
-                        )
-                    } else {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_favourite),
-                            contentDescription = stringResource(R.string.favourite_cat)
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.size(16.dp))
-                if (isCatDownloading) {
-                    LoadingSpinner(modifier = Modifier.padding(12.dp).size(24.dp))
-                } else {
-                    IconButton(
-                        onClick = {
-                            if (isDownloadPermissionGranted == false) {
-                                Toast.makeText(context, R.string.ask_for_storage_permission, Toast.LENGTH_SHORT).show()
-                            } else {
-                                onDownloadClick()
-                            }
-                        },
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_download),
-                            contentDescription = stringResource(R.string.save_cat),
-                            tint = if (isDownloadPermissionGranted == false) Red else Color.White,
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.size(16.dp))
-                IconButton(
-                    onClick = onShareCat,
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_share),
-                        contentDescription = stringResource(R.string.share_cat),
-                        tint = Color.White,
-                    )
-                }
-            }
+            ActionBar(
+                cat = cat,
+                isCatDownloading = isCatDownloading,
+                isDownloadPermissionGranted = isDownloadPermissionGranted,
+                pictureHazeState = pictureHazeState,
+                onFavouriteClick = onFavouriteClick,
+                onDownloadClick = onDownloadClick,
+                onShareCat = onShareCat
+            )
         }
     }
 
+}
+
+@Composable
+private fun BoxScope.ActionBar(
+    cat: Cat,
+    isCatDownloading: Boolean,
+    isDownloadPermissionGranted: Boolean?,
+    pictureHazeState: HazeState,
+    onFavouriteClick: () -> Unit,
+    onDownloadClick: () -> Unit,
+    onShareCat: () -> Unit
+) {
+    val context = LocalContext.current
+
+    Row(
+        modifier = Modifier
+            .padding(vertical = 24.dp, horizontal = 36.dp)
+            .border(Dp.Hairline, Color.Gray.copy(alpha = 0.25f), CircleShape)
+            .hazeChild(pictureHazeState, shape = CircleShape)
+            .padding(8.dp)
+            .align(Alignment.BottomCenter),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        IconButton(onClick = onFavouriteClick) {
+            if (cat.isFavourited) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_favourite_filled),
+                    tint = Orange,
+                    contentDescription = stringResource(R.string.unfavourite_cat),
+                )
+            } else {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_favourite),
+                    contentDescription = stringResource(R.string.favourite_cat)
+                )
+            }
+        }
+        Spacer(modifier = Modifier.size(16.dp))
+        if (isCatDownloading) {
+            LoadingSpinner(modifier = Modifier
+                .padding(12.dp)
+                .size(24.dp))
+        } else {
+            IconButton(
+                onClick = {
+                    if (isDownloadPermissionGranted == false) {
+                        Toast.makeText(context, R.string.ask_for_storage_permission, Toast.LENGTH_SHORT).show()
+                    } else {
+                        onDownloadClick()
+                    }
+                },
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_download),
+                    contentDescription = stringResource(R.string.save_cat),
+                    tint = if (isDownloadPermissionGranted == false) Red else Color.White,
+                )
+            }
+        }
+        Spacer(modifier = Modifier.size(16.dp))
+        IconButton(
+            onClick = onShareCat,
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_share),
+                contentDescription = stringResource(R.string.share_cat),
+                tint = Color.White,
+            )
+        }
+    }
 }
 
 @Composable
@@ -250,19 +275,19 @@ private fun IconButton(
     onClick: () -> Unit,
     enabled: Boolean = true,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
-    rippleRadius: Dp = 36.dp,
+    rippleRadius: Dp = 24.dp,
     content: @Composable () -> Unit,
 ) {
     Box(
         modifier = modifier
-            .minimumInteractiveComponentSize()
             .clickable(
                 onClick = onClick,
                 enabled = enabled,
                 role = Role.Button,
                 interactionSource = interactionSource,
                 indication = rememberRipple(bounded = false, radius = rippleRadius),
-            ),
+            )
+            .minimumInteractiveComponentSize(),
         contentAlignment = Alignment.Center,
     ) {
         content()
