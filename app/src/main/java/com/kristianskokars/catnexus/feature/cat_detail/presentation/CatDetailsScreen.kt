@@ -7,10 +7,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -31,7 +31,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -39,8 +38,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -61,16 +58,17 @@ import com.kristianskokars.catnexus.core.presentation.DefaultHazeStyle
 import com.kristianskokars.catnexus.core.presentation.components.BackgroundSurface
 import com.kristianskokars.catnexus.core.presentation.components.CatNexusTopBarLayout
 import com.kristianskokars.catnexus.core.presentation.components.LoadingSpinner
-import com.kristianskokars.catnexus.core.presentation.components.ZoomableBox
 import com.kristianskokars.catnexus.core.presentation.theme.Orange
 import com.kristianskokars.catnexus.core.presentation.theme.Red
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.result.EmptyResultBackNavigator
 import com.ramcosta.composedestinations.result.ResultBackNavigator
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.haze
 import dev.chrisbanes.haze.hazeChild
 import kotlinx.coroutines.flow.collectLatest
-import timber.log.Timber
+import net.engawapg.lib.zoomable.rememberZoomState
+import net.engawapg.lib.zoomable.zoomable
 
 data class CatDetailsScreenNavArgs(val catPageIndex: Int, val showFavourites: Boolean = false)
 
@@ -87,9 +85,7 @@ fun CatDetailsScreen(
     val cats by viewModel.cats.collectAsStateWithLifecycle()
     val pageCount by viewModel.pageCount.collectAsStateWithLifecycle()
     val isCatDownloading by viewModel.isCatDownloading.collectAsStateWithLifecycle(initialValue = false)
-    var isDownloadPermissionGranted by remember {
-        mutableStateOf(isPermissionToSavePicturesGranted(context))
-    }
+    var isDownloadPermissionGranted by remember { mutableStateOf(isPermissionToSavePicturesGranted(context)) }
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -101,8 +97,6 @@ fun CatDetailsScreen(
     }
     val pagerState = rememberPagerState(initialPage = navArgsDelegate.catPageIndex, pageCount = { pageCount })
 
-    Timber.d("State: ${pagerState.currentPage}")
-    Timber.d("PageCount: ${pagerState.pageCount}")
     LaunchedEffect(pagerState) {
         snapshotFlow { pagerState.currentPage }.collectLatest { page ->
             viewModel.onPageSelected(page)
@@ -141,9 +135,8 @@ fun CatDetailsContent(
 ) {
     val hazeState = remember { HazeState() }
     val pictureHazeState = remember { HazeState() }
+    val zoomState = rememberZoomState()
     val configuration = LocalConfiguration.current
-    val context = LocalContext.current
-    var zoomScale by remember { mutableFloatStateOf(1f) }
     val isInLandscape by remember {
         derivedStateOf {
             configuration.screenWidthDp > configuration.screenHeightDp
@@ -156,7 +149,7 @@ fun CatDetailsContent(
 
     Scaffold(
         topBar = {
-            CatNexusTopBarLayout(hazeState = hazeState, isBorderVisible = zoomScale != 1f) {
+            CatNexusTopBarLayout(hazeState = hazeState, isBorderVisible = zoomState.scale != 1f) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -184,20 +177,19 @@ fun CatDetailsContent(
                 .then(if (isInLandscape) Modifier.padding(padding) else Modifier.padding(bottom = padding.calculateBottomPadding()))
                 .fillMaxSize(),
         ) {
-            ZoomableBox(
-                modifier = Modifier
-                    .haze(state = pictureHazeState, style = DefaultHazeStyle)
-                    .fillMaxWidth()
-                    .fillMaxHeight(),
-                onScaleChange = { zoomScale = it }
-            ) {
-                HorizontalPager(
+            HorizontalPager(
+                state = pagerState,
+                flingBehavior = PagerDefaults.flingBehavior(
                     state = pagerState,
-                    userScrollEnabled = zoomScale == 1f,
-                    flingBehavior = PagerDefaults.flingBehavior(
-                        state = pagerState,
-                    )
-                ) { index ->
+                )
+            ) { index ->
+                Box(
+                    modifier = Modifier
+                        .haze(state = pictureHazeState, style = DefaultHazeStyle)
+                        .fillMaxWidth()
+                        .fillMaxHeight()
+                        .zoomable(zoomState)
+                ) {
                     val cat = cats[index]
 
                     AsyncImage(
@@ -206,17 +198,6 @@ fun CatDetailsContent(
                             .crossfade(true)
                             .build(),
                         modifier = Modifier
-                            .pointerInput(null) {
-                                detectTapGestures(onDoubleTap = { position ->
-                                    zoomInOrOut(position)
-                                })
-                            }
-                            .graphicsLayer(
-                                scaleX = scale,
-                                scaleY = scale,
-                                translationX = offsetX,
-                                translationY = offsetY
-                            )
                             .align(Alignment.Center)
                             .fillMaxSize(),
                         contentScale = ContentScale.Fit,
@@ -225,66 +206,89 @@ fun CatDetailsContent(
                     )
                 }
             }
-            Row(
-                modifier = Modifier
-                    .padding(vertical = 24.dp, horizontal = 36.dp)
-                    .border(Dp.Hairline, Color.Gray.copy(alpha = 0.25f), CircleShape)
-                    .hazeChild(pictureHazeState, shape = CircleShape)
-                    .padding(8.dp)
-                    .align(Alignment.BottomCenter),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                IconButton(onClick = onFavouriteClick) {
-                    if (cats[pagerState.currentPage].isFavourited) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_favourite_filled),
-                            tint = Orange,
-                            contentDescription = stringResource(R.string.unfavourite_cat),
-                        )
-                    } else {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_favourite),
-                            contentDescription = stringResource(R.string.favourite_cat)
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.size(16.dp))
-                if (isCatDownloading) {
-                    LoadingSpinner(modifier = Modifier
-                        .padding(12.dp)
-                        .size(24.dp))
-                } else {
-                    IconButton(
-                        onClick = {
-                            if (isDownloadPermissionGranted == false) {
-                                Toast.makeText(context, R.string.ask_for_storage_permission, Toast.LENGTH_SHORT).show()
-                            } else {
-                                onDownloadClick()
-                            }
-                        },
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_download),
-                            contentDescription = stringResource(R.string.save_cat),
-                            tint = if (isDownloadPermissionGranted == false) Red else Color.White,
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.size(16.dp))
-                IconButton(
-                    onClick = onShareCat,
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_share),
-                        contentDescription = stringResource(R.string.share_cat),
-                        tint = Color.White,
-                    )
-                }
-            }
+            ActionBar(
+                cat = cats[pagerState.currentPage],
+                isCatDownloading = isCatDownloading,
+                isDownloadPermissionGranted = isDownloadPermissionGranted,
+                pictureHazeState = pictureHazeState,
+                onFavouriteClick = onFavouriteClick,
+                onDownloadClick = onDownloadClick,
+                onShareCat = onShareCat
+            )
         }
     }
 
+}
+
+@Composable
+private fun BoxScope.ActionBar(
+    cat: Cat,
+    isCatDownloading: Boolean,
+    isDownloadPermissionGranted: Boolean?,
+    pictureHazeState: HazeState,
+    onFavouriteClick: () -> Unit,
+    onDownloadClick: () -> Unit,
+    onShareCat: () -> Unit
+) {
+    val context = LocalContext.current
+
+    Row(
+        modifier = Modifier
+            .padding(vertical = 24.dp, horizontal = 36.dp)
+            .border(Dp.Hairline, Color.Gray.copy(alpha = 0.25f), CircleShape)
+            .hazeChild(pictureHazeState, shape = CircleShape)
+            .padding(8.dp)
+            .align(Alignment.BottomCenter),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        IconButton(onClick = onFavouriteClick) {
+            if (cat.isFavourited) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_favourite_filled),
+                    tint = Orange,
+                    contentDescription = stringResource(R.string.unfavourite_cat),
+                )
+            } else {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_favourite),
+                    contentDescription = stringResource(R.string.favourite_cat)
+                )
+            }
+        }
+        Spacer(modifier = Modifier.size(16.dp))
+        if (isCatDownloading) {
+            LoadingSpinner(modifier = Modifier
+                .padding(12.dp)
+                .size(24.dp))
+        } else {
+            IconButton(
+                onClick = {
+                    if (isDownloadPermissionGranted == false) {
+                        Toast.makeText(context, R.string.ask_for_storage_permission, Toast.LENGTH_SHORT).show()
+                    } else {
+                        onDownloadClick()
+                    }
+                },
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_download),
+                    contentDescription = stringResource(R.string.save_cat),
+                    tint = if (isDownloadPermissionGranted == false) Red else Color.White,
+                )
+            }
+        }
+        Spacer(modifier = Modifier.size(16.dp))
+        IconButton(
+            onClick = onShareCat,
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_share),
+                contentDescription = stringResource(R.string.share_cat),
+                tint = Color.White,
+            )
+        }
+    }
 }
 
 @Composable
@@ -293,40 +297,42 @@ private fun IconButton(
     onClick: () -> Unit,
     enabled: Boolean = true,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
-    rippleRadius: Dp = 36.dp,
+    rippleRadius: Dp = 24.dp,
     content: @Composable () -> Unit,
 ) {
     Box(
         modifier = modifier
-            .minimumInteractiveComponentSize()
             .clickable(
                 onClick = onClick,
                 enabled = enabled,
                 role = Role.Button,
                 interactionSource = interactionSource,
                 indication = rememberRipple(bounded = false, radius = rippleRadius),
-            ),
+            )
+            .minimumInteractiveComponentSize(),
         contentAlignment = Alignment.Center,
     ) {
         content()
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Preview
 @Composable
 private fun CatDetailsScreenPreview() {
     val context = LocalContext.current
 
     BackgroundSurface {
-//        CatDetailsContent(
-//            cat = Cat(id = "cat", url = "cat", name = "cat", fetchedDateInMillis = 0),
-//            isCatDownloading = true,
-//            navigator = EmptyDestinationsNavigator,
-//            imageLoader = ImageLoader.Builder(context).build(),
-//            isDownloadPermissionGranted = null,
-//            onDownloadClick = {},
-//            onFavouriteClick = {},
-//            onShareCat = {}
-//        )
+        CatDetailsContent(
+            cats = emptyList(),
+            isCatDownloading = true,
+            pagerState = rememberPagerState { 1 },
+            resultNavigator = EmptyResultBackNavigator(),
+            imageLoader = ImageLoader.Builder(context).build(),
+            isDownloadPermissionGranted = null,
+            onDownloadClick = {},
+            onFavouriteClick = {},
+            onShareCat = {}
+        )
     }
 }

@@ -30,7 +30,11 @@ class CatDetailsViewModel @Inject constructor(
     private val startingCatPageIndex = navArgs.catPageIndex
     private val _page = MutableStateFlow(startingCatPageIndex)
 
-    val pageCount = repository.cats.map { it.size }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Int.MAX_VALUE)
+    val pageCount = if (showFavourites)
+        repository.getFavouritedCats().map { it.size }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Int.MAX_VALUE)
+    else
+        repository.cats.map { it.size }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Int.MAX_VALUE)
+
     val cats =
         if (showFavourites)
             repository.getFavouritedCats().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -64,6 +68,8 @@ class CatDetailsViewModel @Inject constructor(
     }
 
     fun onPageSelected(page: Int) {
+        if (page >= cats.value.size) return
+
         _page.update { page }
     }
 
