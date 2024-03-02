@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -35,6 +36,7 @@ import com.kristianskokars.catnexus.core.presentation.components.CatNexusTopBarL
 import com.kristianskokars.catnexus.core.presentation.components.ErrorGettingCats
 import com.kristianskokars.catnexus.core.presentation.components.LoadingCats
 import com.kristianskokars.catnexus.core.presentation.components.LoadingSpinner
+import com.kristianskokars.catnexus.core.presentation.scrollToReturnedItemIndex
 import com.kristianskokars.catnexus.core.presentation.theme.Black
 import com.kristianskokars.catnexus.core.presentation.theme.Orange
 import com.kristianskokars.catnexus.feature.appDestination
@@ -46,6 +48,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
+import com.ramcosta.composedestinations.result.ResultRecipient
 import com.ramcosta.composedestinations.spec.DestinationStyle
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
@@ -87,11 +90,16 @@ object HomeTransitions : DestinationStyle.Animated {
 fun CatListScreen(
     viewModel: CatListViewModel = hiltViewModel(),
     navigator: DestinationsNavigator,
+    resultRecipient: ResultRecipient<CatDetailsScreenDestination, Int>
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val lazyGridState = rememberLazyGridState()
+
+    resultRecipient.scrollToReturnedItemIndex(lazyGridState = lazyGridState)
 
     CatListContent(
         state = state,
+        lazyGridState = lazyGridState,
         navigator = navigator,
         onFetchMoreCats = viewModel::fetchCats,
         onRetry = viewModel::retryFetch,
@@ -101,12 +109,12 @@ fun CatListScreen(
 @Composable
 private fun CatListContent(
     state: CatListState,
+    lazyGridState: LazyGridState,
     navigator: DestinationsNavigator,
     onFetchMoreCats: () -> Unit,
     onRetry: () -> Unit,
 ) {
     val hazeState = remember { HazeState() }
-    val lazyGridState = rememberLazyGridState()
 
     Scaffold(
         topBar = {
@@ -141,7 +149,9 @@ private fun CatListContent(
         }
     ) { padding ->
         Column(
-            modifier = Modifier.padding(horizontal = 8.dp).padding(bottom = padding.calculateBottomPadding())
+            modifier = Modifier
+                .padding(horizontal = 8.dp)
+                .padding(bottom = padding.calculateBottomPadding())
         ) {
             when (state) {
                 is CatListState.Loaded -> CatGrid(
@@ -186,6 +196,7 @@ private fun CatListContentPreview() {
     BackgroundSurface {
         CatListContent(
             state = CatListState.Loading,
+            lazyGridState = rememberLazyGridState(),
             navigator = EmptyDestinationsNavigator,
             onFetchMoreCats = {},
             onRetry = {},

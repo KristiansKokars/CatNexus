@@ -105,6 +105,9 @@ dependencies {
     // Haze
     implementation "dev.chrisbanes.haze:haze:0.5.3"
 
+    // Zoomable
+    implementation "net.engawapg.lib:zoomable:1.6.0"
+
     // Testing
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'io.mockk:mockk:1.13.9'
