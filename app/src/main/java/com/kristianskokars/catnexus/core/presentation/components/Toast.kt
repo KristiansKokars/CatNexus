@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SnackbarData
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,7 +32,7 @@ fun BelowTopBarDownloadToast(
     modifier: Modifier = Modifier,
     hostState: SnackbarHostState
 ) {
-    SnackbarHost(hostState = hostState) { data ->
+    ToastHost(hostState = hostState) { data ->
         Box(
             modifier = modifier
                 .fillMaxSize()
