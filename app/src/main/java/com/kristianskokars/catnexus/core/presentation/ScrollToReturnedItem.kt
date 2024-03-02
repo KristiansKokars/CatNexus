@@ -24,9 +24,14 @@ fun <T : DestinationSpec<*>> ResultRecipient<T, Int>.scrollToReturnedItemIndex(
                 // We put an offset to ensure the scrolled to item is not hidden behind the top bar
                 // TODO: make it take the same size as an item actually is
                 scope.launch {
+                    if (isItemVisible(result.value, lazyGridState)) return@launch
+
                     lazyGridState.scrollToItem(result.value, scrollOffset = scrollOffset)
                 }
             }
         }
     }
 }
+
+private fun isItemVisible(itemIndex: Int, lazyGridState: LazyGridState) =
+    itemIndex > lazyGridState.firstVisibleItemIndex && itemIndex < lazyGridState.layoutInfo.visibleItemsInfo.lastIndex
