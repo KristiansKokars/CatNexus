@@ -31,6 +31,7 @@ import androidx.navigation.NavBackStackEntry
 import com.kristianskokars.catnexus.R
 import com.kristianskokars.catnexus.core.presentation.components.BackgroundSurface
 import com.kristianskokars.catnexus.core.presentation.components.BottomBarDestination
+import com.kristianskokars.catnexus.core.presentation.components.CatGrid
 import com.kristianskokars.catnexus.core.presentation.components.CatNexusBottomBar
 import com.kristianskokars.catnexus.core.presentation.components.CatNexusTopBarLayout
 import com.kristianskokars.catnexus.core.presentation.components.ErrorGettingCats
@@ -40,7 +41,6 @@ import com.kristianskokars.catnexus.core.presentation.scrollToReturnedItemIndex
 import com.kristianskokars.catnexus.core.presentation.theme.Black
 import com.kristianskokars.catnexus.core.presentation.theme.Orange
 import com.kristianskokars.catnexus.feature.appDestination
-import com.kristianskokars.catnexus.feature.cat_list.presentation.components.CatGrid
 import com.kristianskokars.catnexus.feature.destinations.CatDetailsScreenDestination
 import com.kristianskokars.catnexus.feature.destinations.FavouritesScreenDestination
 import com.kristianskokars.catnexus.lib.navigateToBottomBarDestination

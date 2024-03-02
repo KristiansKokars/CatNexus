@@ -1,4 +1,4 @@
-package com.kristianskokars.catnexus.feature.cat_list.presentation.components
+package com.kristianskokars.catnexus.core.presentation.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box

@@ -30,6 +30,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavBackStackEntry
 import com.kristianskokars.catnexus.core.presentation.components.BackgroundSurface
 import com.kristianskokars.catnexus.core.presentation.components.BottomBarDestination
+import com.kristianskokars.catnexus.core.presentation.components.CatGrid
 import com.kristianskokars.catnexus.core.presentation.components.CatNexusBottomBar
 import com.kristianskokars.catnexus.core.presentation.components.CatNexusDefaultTopBar
 import com.kristianskokars.catnexus.core.presentation.components.LoadingCats
@@ -39,7 +40,6 @@ import com.kristianskokars.catnexus.core.presentation.theme.Inter
 import com.kristianskokars.catnexus.core.presentation.theme.Orange
 import com.kristianskokars.catnexus.feature.appDestination
 import com.kristianskokars.catnexus.feature.cat_detail.presentation.CatDetailsScreenNavArgs
-import com.kristianskokars.catnexus.feature.cat_list.presentation.components.CatGrid
 import com.kristianskokars.catnexus.feature.destinations.CatDetailsScreenDestination
 import com.kristianskokars.catnexus.feature.destinations.CatListScreenDestination
 import com.kristianskokars.catnexus.lib.navigateToBottomBarDestination
