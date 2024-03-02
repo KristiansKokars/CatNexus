@@ -16,6 +16,9 @@ import androidx.work.WorkerParameters
 import com.kristianskokars.catnexus.R
 import com.kristianskokars.catnexus.core.CHANNEL_ID
 import com.kristianskokars.catnexus.core.domain.repository.FileStorage
+import com.kristianskokars.catnexus.lib.ToastMessage
+import com.kristianskokars.catnexus.lib.Toaster
+import com.kristianskokars.catnexus.lib.UIText
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
@@ -23,6 +26,7 @@ import dagger.assisted.AssistedInject
 class DownloadImageWorker @AssistedInject constructor(
     @Assisted private val context: Context,
     @Assisted parameters: WorkerParameters,
+    private val toaster: Toaster,
     private val fileStorage: FileStorage,
 ) : CoroutineWorker(context, parameters) {
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -66,7 +70,7 @@ class DownloadImageWorker @AssistedInject constructor(
         }
     }
 
-    private fun showFinishedNotification(downloadUrl: String, fileUri: Uri) {
+    private suspend fun showFinishedNotification(downloadUrl: String, fileUri: Uri) {
         val contentTitle = context.getString(R.string.downloaded_picture)
         val contentText = context.getString(R.string.downloaded_from, downloadUrl)
 
@@ -87,9 +91,10 @@ class DownloadImageWorker @AssistedInject constructor(
         with(notificationManager) {
             notify(COMPLETED_DOWNLOAD_NOTIFICATION_ID, notification)
         }
+        toaster.show(ToastMessage(UIText.StringResource(R.string.picture_downloaded)))
     }
 
-    private fun showFailedNotification(downloadUrl: String) {
+    private suspend fun showFailedNotification(downloadUrl: String) {
         val contentTitle = context.getString(R.string.error_downloading_picture_title)
         val contentText = context.getString(R.string.error_downloading_picture_text, downloadUrl)
 
@@ -102,6 +107,7 @@ class DownloadImageWorker @AssistedInject constructor(
         with(notificationManager) {
             notify(FAILED_DOWNLOAD_NOTIFICATION_ID, notification)
         }
+        toaster.show(ToastMessage(UIText.StringResource(R.string.failed_download)))
     }
 
     companion object {
