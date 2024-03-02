@@ -1,5 +1,6 @@
 package com.kristianskokars.catnexus
 
+import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -7,12 +8,10 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import coil.ImageLoader
@@ -34,6 +33,7 @@ class MainActivity : ComponentActivity() {
     @Inject lateinit var imageLoader: ImageLoader
     @Inject lateinit var toaster: Toaster
 
+    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter") // we are not using anything that needs the safety padding
     @OptIn(ExperimentalMaterialNavigationApi::class, ExperimentalAnimationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -59,9 +59,8 @@ class MainActivity : ComponentActivity() {
             BackgroundSurface {
                 Scaffold(
                     snackbarHost = { BelowTopBarDownloadToast(hostState = snackbarHostState) }
-                ) { padding ->
+                ) {
                     DestinationsNavHost(
-                        modifier = Modifier.padding(padding),
                         engine = rememberAnimatedNavHostEngine(
                             rootDefaultAnimations = screenSlideTransitionAnimations,
                         ),

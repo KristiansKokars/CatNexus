@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
@@ -22,8 +23,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.kristianskokars.catnexus.R
 import com.kristianskokars.catnexus.core.presentation.theme.Black
+import com.kristianskokars.catnexus.core.presentation.theme.Inter
 
 @Composable
 fun BelowTopBarDownloadToast(
@@ -34,7 +37,8 @@ fun BelowTopBarDownloadToast(
         Box(
             modifier = modifier
                 .fillMaxSize()
-                .padding(top = 124.dp)
+                .safeContentPadding()
+                .padding(top = 36.dp)
         ) {
             Toast(
                 modifier = Modifier.align(Alignment.TopCenter),
@@ -63,12 +67,16 @@ private fun Toast(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
-            modifier = Modifier.size(24.dp),
+            modifier = Modifier.size(20.dp),
             painter = painterResource(id = R.drawable.ic_download),
             contentDescription = null,
             tint = Color.White,
         )
         Spacer(modifier = Modifier.size(6.dp))
-        Text(text = data.visuals.message)
+        Text(
+            fontFamily = Inter,
+            fontSize = 12.sp,
+            text = data.visuals.message
+        )
     }
 }
