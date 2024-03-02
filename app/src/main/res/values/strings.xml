@@ -7,6 +7,8 @@
     <string name="error_downloading_picture_title">Failed to download a cat picture.</string>
     <string name="error_downloading_picture_text">Check your internet or if there is any remaining storage space on the device. Could not download picture from %s.</string>
     <string name="downloaded_from">Downloaded picture from: %s</string>
+    <string name="picture_downloaded">Downloaded Cat</string>
+    <string name="failed_download">Failed Download</string>
     <string name="save_cat">SAVE CAT</string>
     <string name="go_back">Go back</string>
     <string name="cat_infinity">Cat Nexus</string>
