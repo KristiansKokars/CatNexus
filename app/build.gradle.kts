@@ -107,7 +107,7 @@ dependencies {
     implementation("com.jakewharton.timber:timber:5.0.1")
 
     // Haze
-    implementation("dev.chrisbanes.haze:haze:0.5.3")
+    implementation("dev.chrisbanes.haze:haze:0.5.4")
 
     // Zoomable
     implementation("net.engawapg.lib:zoomable:1.6.0")
