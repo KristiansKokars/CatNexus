@@ -9,7 +9,7 @@ import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import com.kristianskokars.catnexus.core.BASE_URL
 import com.kristianskokars.catnexus.core.CAT_DATABASE
-import com.kristianskokars.catnexus.core.data.data_source.local.AndroidFileStorage
+import com.kristianskokars.catnexus.core.data.data_source.local.AndroidImageDownloader
 import com.kristianskokars.catnexus.core.data.data_source.local.AndroidImageSharer
 import com.kristianskokars.catnexus.core.data.data_source.local.CatDao
 import com.kristianskokars.catnexus.core.data.data_source.local.CatDatabase
@@ -17,7 +17,7 @@ import com.kristianskokars.catnexus.core.data.data_source.remote.CatAPI
 import com.kristianskokars.catnexus.core.data.data_source.remote.NetworkClient
 import com.kristianskokars.catnexus.core.data.repository.OfflineFirstCatRepository
 import com.kristianskokars.catnexus.core.domain.repository.CatRepository
-import com.kristianskokars.catnexus.core.domain.repository.FileStorage
+import com.kristianskokars.catnexus.core.domain.repository.ImageDownloader
 import com.kristianskokars.catnexus.core.domain.repository.ImageSharer
 import dagger.Module
 import dagger.Provides
@@ -81,7 +81,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideFileStorage(androidFileStorage: AndroidFileStorage): FileStorage = androidFileStorage
+    fun provideImageDownloader(androidImageDownloader: AndroidImageDownloader): ImageDownloader = androidImageDownloader
 
     @Provides
     @Singleton

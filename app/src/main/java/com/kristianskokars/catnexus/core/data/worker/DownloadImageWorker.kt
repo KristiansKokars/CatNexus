@@ -15,7 +15,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.kristianskokars.catnexus.R
 import com.kristianskokars.catnexus.core.CHANNEL_ID
-import com.kristianskokars.catnexus.core.domain.repository.FileStorage
+import com.kristianskokars.catnexus.core.domain.repository.ImageDownloader
 import com.kristianskokars.catnexus.lib.ToastMessage
 import com.kristianskokars.catnexus.lib.Toaster
 import com.kristianskokars.catnexus.lib.UIText
@@ -27,7 +27,7 @@ class DownloadImageWorker @AssistedInject constructor(
     @Assisted private val context: Context,
     @Assisted parameters: WorkerParameters,
     private val toaster: Toaster,
-    private val fileStorage: FileStorage,
+    private val imageDownloader: ImageDownloader,
 ) : CoroutineWorker(context, parameters) {
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -36,7 +36,7 @@ class DownloadImageWorker @AssistedInject constructor(
         val fileName = inputData.getString(OUTPUT_FILE_NAME) ?: return Result.failure()
 
         setForeground(createForegroundInfo(downloadUrl))
-        return fileStorage.downloadImage(downloadUrl, fileName).handle(
+        return imageDownloader.downloadImage(downloadUrl, fileName).handle(
             onSuccess = { fileUri ->
                 showFinishedNotification(downloadUrl, fileUri)
                 Result.success()
