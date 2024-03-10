@@ -68,7 +68,14 @@ class CatDetailsViewModel @Inject constructor(
     }
 
     fun onPageSelected(page: Int) {
-        if (page >= cats.value.size) return
+        if (page > cats.value.size - 1) return
+
+        // we add more cats one page before the final one to have it preload earlier for better UX
+        if (page == cats.value.size - 2 && !showFavourites) {
+            viewModelScope.launch {
+                repository.refreshCats()
+            }
+        }
 
         _page.update { page }
     }
