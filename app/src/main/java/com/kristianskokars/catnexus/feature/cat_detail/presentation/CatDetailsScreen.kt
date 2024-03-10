@@ -55,9 +55,11 @@ import coil.request.ImageRequest
 import com.kristianskokars.catnexus.R
 import com.kristianskokars.catnexus.core.domain.model.Cat
 import com.kristianskokars.catnexus.core.presentation.DefaultHazeStyle
+import com.kristianskokars.catnexus.core.presentation.ElevatedHazeStyle
 import com.kristianskokars.catnexus.core.presentation.components.BackgroundSurface
 import com.kristianskokars.catnexus.core.presentation.components.CatNexusTopBarLayout
 import com.kristianskokars.catnexus.core.presentation.components.LoadingSpinner
+import com.kristianskokars.catnexus.core.presentation.theme.Gray
 import com.kristianskokars.catnexus.core.presentation.theme.Orange
 import com.kristianskokars.catnexus.core.presentation.theme.Red
 import com.ramcosta.composedestinations.annotation.Destination
@@ -235,8 +237,8 @@ private fun BoxScope.ActionBar(
     Row(
         modifier = Modifier
             .padding(vertical = 24.dp, horizontal = 36.dp)
-            .border(Dp.Hairline, Color.Gray.copy(alpha = 0.25f), CircleShape)
-            .hazeChild(pictureHazeState, shape = CircleShape)
+            .border(Dp.Hairline, Gray.copy(alpha = 0.4f), CircleShape)
+            .hazeChild(pictureHazeState, shape = CircleShape, style = ElevatedHazeStyle)
             .padding(8.dp)
             .align(Alignment.BottomCenter),
         horizontalArrangement = Arrangement.Center,

@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kristianskokars.catnexus.R
 import com.kristianskokars.catnexus.core.presentation.theme.Black
+import com.kristianskokars.catnexus.core.presentation.theme.Gray
 import com.kristianskokars.catnexus.core.presentation.theme.Inter
 
 @Composable
@@ -58,7 +59,7 @@ private fun Toast(
             .background(Black, CircleShape)
             .border(
                 Dp.Hairline,
-                Color.Gray.copy(alpha = 0.75f),
+                Gray.copy(alpha = 0.7f),
                 CircleShape
             )
             .padding(8.dp),
