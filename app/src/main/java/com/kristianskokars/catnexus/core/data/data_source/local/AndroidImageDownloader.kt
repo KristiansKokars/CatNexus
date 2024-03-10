@@ -10,7 +10,7 @@ import android.provider.MediaStore
 import androidx.core.graphics.drawable.toBitmap
 import coil.ImageLoader
 import coil.request.ImageRequest
-import com.kristianskokars.catnexus.core.domain.repository.FileStorage
+import com.kristianskokars.catnexus.core.domain.repository.ImageDownloader
 import com.kristianskokars.catnexus.lib.Err
 import com.kristianskokars.catnexus.lib.Ok
 import com.kristianskokars.catnexus.lib.Result
@@ -26,10 +26,10 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 @Singleton
-class AndroidFileStorage @Inject constructor(
+class AndroidImageDownloader @Inject constructor(
     @ApplicationContext private val context: Context,
     private val imageLoader: ImageLoader
-) : FileStorage {
+) : ImageDownloader {
     override suspend fun downloadImage(url: String, fileName: String): Result<Unit, Uri> {
         try {
             val resolver = context.contentResolver
