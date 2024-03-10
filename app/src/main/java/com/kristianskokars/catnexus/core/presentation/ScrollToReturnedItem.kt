@@ -34,4 +34,4 @@ fun <T : DestinationSpec<*>> ResultRecipient<T, Int>.scrollToReturnedItemIndex(
 }
 
 private fun isItemVisible(itemIndex: Int, lazyGridState: LazyGridState) =
-    itemIndex > lazyGridState.firstVisibleItemIndex && itemIndex < lazyGridState.layoutInfo.visibleItemsInfo.lastIndex
+    itemIndex > lazyGridState.firstVisibleItemIndex && itemIndex < lazyGridState.layoutInfo.visibleItemsInfo.last().index
