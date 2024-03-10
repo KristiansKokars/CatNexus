@@ -31,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -137,13 +138,13 @@ fun CatDetailsContent(
 ) {
     val hazeState = remember { HazeState() }
     val pictureHazeState = remember { HazeState() }
-    val zoomState = rememberZoomState()
     val configuration = LocalConfiguration.current
     val isInLandscape by remember {
         derivedStateOf {
             configuration.screenWidthDp > configuration.screenHeightDp
         }
     }
+    var zoomFactor by remember { mutableFloatStateOf(1f) }
 
     if (cats.getOrNull(pagerState.currentPage) == null || cats.isEmpty()) {
         return
@@ -151,7 +152,7 @@ fun CatDetailsContent(
 
     Scaffold(
         topBar = {
-            CatNexusTopBarLayout(hazeState = hazeState, isBorderVisible = zoomState.scale != 1f) {
+            CatNexusTopBarLayout(hazeState = hazeState, isBorderVisible = zoomFactor != 1f) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -185,6 +186,12 @@ fun CatDetailsContent(
                     state = pagerState,
                 )
             ) { index ->
+                val zoomState = rememberZoomState()
+
+                LaunchedEffect(key1 = zoomState.scale) {
+                    zoomFactor = zoomState.scale
+                }
+
                 Box(
                     modifier = Modifier
                         .haze(state = pictureHazeState, style = DefaultHazeStyle)
