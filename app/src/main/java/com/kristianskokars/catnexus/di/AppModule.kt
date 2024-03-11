@@ -2,7 +2,6 @@ package com.kristianskokars.catnexus.di
 
 import android.content.Context
 import android.os.Build
-import androidx.datastore.core.DataStore
 import androidx.room.Room
 import androidx.work.WorkManager
 import coil.ImageLoader
@@ -15,6 +14,7 @@ import com.kristianskokars.catnexus.core.data.data_source.local.AndroidImageShar
 import com.kristianskokars.catnexus.core.data.data_source.local.CatDao
 import com.kristianskokars.catnexus.core.data.data_source.local.CatDatabase
 import com.kristianskokars.catnexus.core.data.data_source.local.userSettingsStore
+import com.kristianskokars.catnexus.core.data.data_source.local.PagedCatDao
 import com.kristianskokars.catnexus.core.data.data_source.remote.CatAPI
 import com.kristianskokars.catnexus.core.data.data_source.remote.NetworkClient
 import com.kristianskokars.catnexus.core.data.repository.OfflineFirstCatRepository
@@ -60,11 +60,16 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun providePagedCatDao(db: CatDatabase): PagedCatDao = db.pagedCatDao()
+
+    @Provides
+    @Singleton
     fun provideCatRepository(
-        local: CatDao,
+        catDao: CatDao,
+        pagedCatDao: PagedCatDao,
         remote: CatAPI,
         workManager: WorkManager,
-    ): CatRepository = OfflineFirstCatRepository(local, remote, workManager)
+    ): CatRepository = OfflineFirstCatRepository(catDao, pagedCatDao, remote, workManager)
 
     @Provides
     @Singleton
