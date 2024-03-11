@@ -9,7 +9,8 @@ import kotlinx.coroutines.flow.Flow
 interface CatRepository {
     val cats: Flow<List<Cat>>
     fun getFavouritedCats(): Flow<List<Cat>>
-    fun getCat(id: String): Flow<Cat>
+    fun getPagedCat(id: String): Flow<Cat>
+    fun getSavedCat(id: String): Flow<Cat>
     fun saveCatImage(cat: Cat)
     fun toggleFavouriteForCat(id: String)
     fun isCatDownloading(catId: String): Flow<Boolean>
