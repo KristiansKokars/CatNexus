@@ -187,7 +187,6 @@ private fun CatListContent(
             }
         }
     }
-
 }
 
 @Preview(uiMode = UI_MODE_NIGHT_YES)
