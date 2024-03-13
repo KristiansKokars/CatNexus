@@ -1,6 +1,7 @@
 package com.kristianskokars.catnexus.feature.cat_detail.presentation
 
 import androidx.datastore.core.DataStore
+import androidx.datastore.core.DataStore
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,13 +11,17 @@ import com.kristianskokars.catnexus.core.domain.model.UserSettings
 import com.kristianskokars.catnexus.core.domain.repository.CatRepository
 import com.kristianskokars.catnexus.core.domain.repository.ImageSharer
 import com.kristianskokars.catnexus.feature.navArgs
+import com.kristianskokars.catnexus.lib.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -26,6 +31,7 @@ import javax.inject.Inject
 class CatDetailsViewModel @Inject constructor(
     private val repository: CatRepository,
     private val imageSharer: ImageSharer,
+    private val navigator: Navigator,
     userSettingsStore: DataStore<UserSettings>,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -33,6 +39,7 @@ class CatDetailsViewModel @Inject constructor(
     private val showFavourites = navArgs.showFavourites
     private val startingCatPageIndex = navArgs.catPageIndex
     private val _page = MutableStateFlow(startingCatPageIndex)
+    private val _isUnfavouritingSavedCatConfirmation = MutableStateFlow(false)
 
     val pageCount = if (showFavourites)
         repository.getFavouritedCats().map { it.size }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Int.MAX_VALUE)
@@ -41,7 +48,10 @@ class CatDetailsViewModel @Inject constructor(
 
     val cats =
         if (showFavourites)
-            repository.getFavouritedCats().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+            repository
+                .getFavouritedCats()
+                .onEach { cats -> if (cats.isEmpty()) navigator.navigateUp() }
+                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
         else
             repository.cats.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -59,6 +69,8 @@ class CatDetailsViewModel @Inject constructor(
         .map { it.swipeDirection }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), CatSwipeDirection.HORIZONTAL)
 
+    val isUnfavouritingSavedCatConfirmation = _isUnfavouritingSavedCatConfirmation.asStateFlow()
+
     fun saveCat() {
         viewModelScope.launch {
             repository.saveCatImage(currentCat())
@@ -67,12 +79,27 @@ class CatDetailsViewModel @Inject constructor(
 
     fun toggleFavouriteCat() {
         viewModelScope.launch {
-            repository.toggleFavouriteForCat(currentCat().id)
+            if (showFavourites && currentCat().isFavourited) {
+                _isUnfavouritingSavedCatConfirmation.update { true }
+            } else {
+                repository.toggleFavouriteForCat(currentCat().id)
+            }
         }
     }
 
     fun shareCat() {
         imageSharer.shareImage(currentCat().url)
+    }
+
+    fun dismissDeleteConfirmation() {
+        _isUnfavouritingSavedCatConfirmation.update { false }
+    }
+
+    fun confirmUnfavourite() {
+        viewModelScope.launch {
+            _isUnfavouritingSavedCatConfirmation.update { false }
+            repository.toggleFavouriteForCat(currentCat().id)
+        }
     }
 
     fun onPageSelected(page: Int) {

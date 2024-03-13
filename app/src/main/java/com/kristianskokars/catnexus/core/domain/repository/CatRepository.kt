@@ -12,7 +12,7 @@ interface CatRepository {
     fun getPagedCat(id: String): Flow<Cat>
     fun getSavedCat(id: String): Flow<Cat>
     fun saveCatImage(cat: Cat)
-    fun toggleFavouriteForCat(id: String)
+    suspend fun toggleFavouriteForCat(id: String)
     fun isCatDownloading(catId: String): Flow<Boolean>
     suspend fun refreshCats(shouldClearPrevious: Boolean = false): Result<ServerError, Success>
 }

@@ -11,6 +11,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -24,9 +25,13 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -49,6 +54,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.ImageLoader
@@ -62,6 +68,7 @@ import com.kristianskokars.catnexus.core.presentation.ElevatedHazeStyle
 import com.kristianskokars.catnexus.core.presentation.components.BackgroundSurface
 import com.kristianskokars.catnexus.core.presentation.components.CatNexusTopBarLayout
 import com.kristianskokars.catnexus.core.presentation.components.LoadingSpinner
+import com.kristianskokars.catnexus.core.presentation.theme.Black
 import com.kristianskokars.catnexus.core.presentation.theme.Gray
 import com.kristianskokars.catnexus.core.presentation.theme.Orange
 import com.kristianskokars.catnexus.core.presentation.theme.Red
@@ -69,6 +76,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.result.EmptyResultBackNavigator
 import com.ramcosta.composedestinations.result.ResultBackNavigator
 import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.haze
 import dev.chrisbanes.haze.hazeChild
 import kotlinx.coroutines.flow.collectLatest
@@ -90,6 +98,7 @@ fun CatDetailsScreen(
     val cats by viewModel.cats.collectAsStateWithLifecycle()
     val pageCount by viewModel.pageCount.collectAsStateWithLifecycle()
     val isCatDownloading by viewModel.isCatDownloading.collectAsStateWithLifecycle(initialValue = false)
+    val isUnfavouritingSavedCatConfirmation by viewModel.isUnfavouritingSavedCatConfirmation.collectAsStateWithLifecycle()
     var isDownloadPermissionGranted by remember { mutableStateOf(isPermissionToSavePicturesGranted(context)) }
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -118,12 +127,15 @@ fun CatDetailsScreen(
         swipeDirection = swipeDirection,
         pagerState = pagerState,
         isCatDownloading = isCatDownloading,
+        isUnfavouritingSavedCatConfirmation = isUnfavouritingSavedCatConfirmation,
         resultNavigator = resultNavigator,
         onDownloadClick = { askForStoragePermissionIfOnOlderAndroid(context, launcher, viewModel::saveCat) },
         imageLoader = imageLoader,
         isDownloadPermissionGranted = isDownloadPermissionGranted,
         onFavouriteClick = viewModel::toggleFavouriteCat,
-        onShareCat = viewModel::shareCat
+        onShareCat = viewModel::shareCat,
+        onDismissDeleteConfirmation = viewModel::dismissDeleteConfirmation,
+        onConfirmUnfavourite = viewModel::confirmUnfavourite
     )
 }
 
@@ -136,10 +148,13 @@ fun CatDetailsContent(
     isCatDownloading: Boolean,
     resultNavigator: ResultBackNavigator<Int>,
     imageLoader: ImageLoader,
+    isUnfavouritingSavedCatConfirmation: Boolean,
     isDownloadPermissionGranted: Boolean?,
     onDownloadClick: () -> Unit,
     onFavouriteClick: () -> Unit,
     onShareCat: () -> Unit,
+    onDismissDeleteConfirmation: () -> Unit,
+    onConfirmUnfavourite: () -> Unit,
 ) {
     val hazeState = remember { HazeState() }
     val pictureHazeState = remember { HazeState() }
@@ -153,6 +168,53 @@ fun CatDetailsContent(
 
     if (cats.getOrNull(pagerState.currentPage) == null || cats.isEmpty()) {
         return
+    }
+
+    if (isUnfavouritingSavedCatConfirmation) {
+        Dialog(
+            onDismissRequest = onDismissDeleteConfirmation
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(vertical = 24.dp, horizontal = 36.dp)
+                    .border(
+                        Dp.Hairline,
+                        Gray.copy(alpha = 0.4f),
+                        RoundedCornerShape(4.dp)
+                    )
+                    .hazeChild(
+                        pictureHazeState,
+                        shape = RoundedCornerShape(4.dp),
+                        style = HazeStyle(
+                            tint = Black.copy(alpha = 0.55f),
+                            blurRadius = 24.dp
+                        )
+                    )
+                    .padding(16.dp)
+            ) {
+                Text(text = "Are you sure you want to unfavourite this cat? It will no longer be locally stored!")
+                Spacer(modifier = Modifier.padding(8.dp))
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    TextButton(
+                        modifier = Modifier.weight(1f),
+                        onClick = onDismissDeleteConfirmation
+                    ) {
+                        Text(text = "Cancel")
+                    }
+                    Spacer(modifier = Modifier.padding(4.dp))
+                    OutlinedButton(
+                        modifier = Modifier.weight(1f),
+                        onClick = {
+                            onDismissDeleteConfirmation()
+                            onConfirmUnfavourite()
+                        }
+                    ) {
+                        Text(text = "OK")
+                    }
+                }
+            }
+
+        }
     }
 
     Scaffold(
@@ -374,13 +436,16 @@ private fun CatDetailsScreenPreview() {
             cats = emptyList(),
             swipeDirection = CatSwipeDirection.HORIZONTAL,
             isCatDownloading = true,
+            isUnfavouritingSavedCatConfirmation = false,
             pagerState = rememberPagerState { 1 },
             resultNavigator = EmptyResultBackNavigator(),
             imageLoader = ImageLoader.Builder(context).build(),
             isDownloadPermissionGranted = null,
             onDownloadClick = {},
             onFavouriteClick = {},
-            onShareCat = {}
+            onShareCat = {},
+            onDismissDeleteConfirmation = {},
+            onConfirmUnfavourite = {}
         )
     }
 }

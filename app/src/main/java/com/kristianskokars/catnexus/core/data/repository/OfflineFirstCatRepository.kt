@@ -23,7 +23,6 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -89,21 +88,22 @@ class OfflineFirstCatRepository(
         }
     }
 
-    override fun toggleFavouriteForCat(id: String) {
-        scope.launch(NonCancellable) {
-            val pagedCat = pagedCatDao.getCat(id).first()
-            val updatedPagedCat = pagedCat.copy(isFavourited = !pagedCat.isFavourited)
+    override suspend fun toggleFavouriteForCat(id: String) = withContext(NonCancellable) {
+        val pagedCat = pagedCatDao.getCat(id).firstOrNull()
+        val updatedPagedCat = pagedCat?.copy(isFavourited = !pagedCat.isFavourited)
+        if (updatedPagedCat != null) {
             pagedCatDao.updateCat(updatedPagedCat)
-
-            val cat = catDao.getCat(id).firstOrNull()
-            if (cat == null) {
-                catDao.addCat(updatedPagedCat.toCatEntity())
-                return@launch
-            }
-
-            // TODO: clean from the local cache later as the user does not want to save it (add that removing it from favourite will unsave it?)
-            catDao.updateCat(cat.copy(isFavourited = !cat.isFavourited))
         }
+
+        val cat = catDao.getCat(id).firstOrNull()
+        if (cat == null && updatedPagedCat != null) {
+            catDao.addCat(updatedPagedCat.toCatEntity())
+            return@withContext
+        }
+        if (cat == null) return@withContext
+
+        // TODO: clean from the local cache later as the user does not want to save it (add that removing it from favourite will unsave it?)
+        catDao.updateCat(cat.copy(isFavourited = !cat.isFavourited))
     }
 
     override fun isCatDownloading(catId: String): Flow<Boolean> {
