@@ -110,7 +110,7 @@ dependencies {
     implementation("dev.chrisbanes.haze:haze:0.5.4")
 
     // Zoomable
-    implementation("net.engawapg.lib:zoomable:1.6.0")
+    implementation("net.engawapg.lib:zoomable:1.6.1")
 
     // Testing
     testImplementation("junit:junit:4.13.2")
