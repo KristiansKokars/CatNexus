@@ -53,7 +53,7 @@ android {
         buildConfig = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.10"
+        kotlinCompilerExtensionVersion = "1.5.11"
     }
     packaging {
         resources {
@@ -65,9 +65,9 @@ android {
 dependencies {
     // Android
     implementation("androidx.core:core-ktx:1.12.0")
-    implementation("androidx.compose.ui:ui:1.6.3")
+    implementation("androidx.compose.ui:ui:1.6.4")
     implementation("androidx.compose.material3:material3:1.2.1")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.6.3")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.6.4")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation("androidx.activity:activity-compose:1.8.2")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
@@ -118,7 +118,7 @@ dependencies {
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
     testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
     testImplementation("io.kotest:kotest-assertions-core:5.8.1")
-    debugImplementation("androidx.compose.ui:ui-tooling:1.6.3")
+    debugImplementation("androidx.compose.ui:ui-tooling:1.6.4")
 }
 
 sentry {
