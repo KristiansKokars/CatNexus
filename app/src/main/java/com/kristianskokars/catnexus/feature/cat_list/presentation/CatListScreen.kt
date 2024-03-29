@@ -1,34 +1,64 @@
 package com.kristianskokars.catnexus.feature.cat_list.presentation
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerDefaults
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavBackStackEntry
+import coil.ImageLoader
 import com.kristianskokars.catnexus.R
+import com.kristianskokars.catnexus.core.domain.model.Cat
+import com.kristianskokars.catnexus.core.presentation.DefaultHazeStyle
 import com.kristianskokars.catnexus.core.presentation.components.BackgroundSurface
 import com.kristianskokars.catnexus.core.presentation.components.BottomBarDestination
 import com.kristianskokars.catnexus.core.presentation.components.CatGrid
@@ -39,8 +69,13 @@ import com.kristianskokars.catnexus.core.presentation.components.LoadingCats
 import com.kristianskokars.catnexus.core.presentation.components.LoadingSpinner
 import com.kristianskokars.catnexus.core.presentation.scrollToReturnedItemIndex
 import com.kristianskokars.catnexus.core.presentation.theme.Black
+import com.kristianskokars.catnexus.core.presentation.theme.Gray
 import com.kristianskokars.catnexus.core.presentation.theme.Orange
 import com.kristianskokars.catnexus.feature.appDestination
+import com.kristianskokars.catnexus.feature.cat_detail.presentation.ActionBar
+import com.kristianskokars.catnexus.feature.cat_detail.presentation.CatDetailsViewModel
+import com.kristianskokars.catnexus.feature.cat_detail.presentation.IconButton
+import com.kristianskokars.catnexus.feature.cat_detail.presentation.isPermissionToSavePicturesGranted
 import com.kristianskokars.catnexus.feature.destinations.CatDetailsScreenDestination
 import com.kristianskokars.catnexus.feature.destinations.FavouritesScreenDestination
 import com.kristianskokars.catnexus.lib.navigateToBottomBarDestination
@@ -50,9 +85,14 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
 import com.ramcosta.composedestinations.result.ResultRecipient
 import com.ramcosta.composedestinations.spec.DestinationStyle
+import com.skydoves.orbital.Orbital
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.haze
+import dev.chrisbanes.haze.hazeChild
+import kotlinx.coroutines.flow.collectLatest
+import net.engawapg.lib.zoomable.rememberZoomState
+import net.engawapg.lib.zoomable.zoomable
 
 object HomeTransitions : DestinationStyle.Animated {
     override fun AnimatedContentTransitionScope<NavBackStackEntry>.enterTransition(): EnterTransition? {
@@ -84,34 +124,266 @@ object HomeTransitions : DestinationStyle.Animated {
     }
 }
 
+data class SharedElementData(
+    val index: Int,
+    val cat: Cat,
+    val catPicture: @Composable () -> Unit
+)
+
+@OptIn(ExperimentalFoundationApi::class)
 @Destination(style = HomeTransitions::class)
 @RootNavGraph(start = true)
 @Composable
 fun CatListScreen(
     viewModel: CatListViewModel = hiltViewModel(),
+    viewModel2: CatDetailsViewModel = hiltViewModel(),
     navigator: DestinationsNavigator,
+    imageLoader: ImageLoader,
     resultRecipient: ResultRecipient<CatDetailsScreenDestination, Int>
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val lazyGridState = rememberLazyGridState()
+    var screen by remember { mutableStateOf<CatScreen>(CatScreen.List()) }
 
     resultRecipient.scrollToReturnedItemIndex(lazyGridState = lazyGridState)
 
-    CatListContent(
-        state = state,
-        lazyGridState = lazyGridState,
-        navigator = navigator,
-        onFetchMoreCats = viewModel::fetchCats,
-        onRetry = viewModel::retryFetch,
-    )
+    val context = LocalContext.current
+    val cats by viewModel2.cats.collectAsStateWithLifecycle()
+    val pageCount by viewModel2.pageCount.collectAsStateWithLifecycle()
+    val isCatDownloading by viewModel2.isCatDownloading.collectAsStateWithLifecycle(initialValue = false)
+    val isUnfavouritingSavedCatConfirmation by viewModel2.isUnfavouritingSavedCatConfirmation.collectAsStateWithLifecycle()
+    var isDownloadPermissionGranted by remember { mutableStateOf(isPermissionToSavePicturesGranted(context)) }
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            viewModel2.saveCat()
+        } else {
+            isDownloadPermissionGranted = false
+        }
+    }
+    val pagerState = rememberPagerState(initialPage = 0, pageCount = { pageCount })
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPage }.collectLatest { page ->
+            viewModel2.onPageSelected(page)
+        }
+    }
+
+    var isClicked by remember { mutableStateOf(false) }
+    var sharedElementParams by remember { mutableStateOf<SharedElementData?>(null) }
+
+    Orbital {
+        when (val currentScreen = screen) {
+            is CatScreen.List -> {
+                CatListContent(
+                    state = state,
+                    lazyGridState = lazyGridState,
+                    navigator = navigator,
+                    currentScreen = currentScreen,
+                    onFetchMoreCats = viewModel::fetchCats,
+                    onRetry = viewModel::retryFetch,
+                    onCatClick = { index, cat, catPicture ->
+                        isClicked = true
+                        sharedElementParams = SharedElementData(index, cat, catPicture)
+                        screen = CatScreen.Details(cat, catPicture)
+                    },
+                    isClicked = isClicked
+                )
+            }
+            is CatScreen.Details -> CatDetailsContent(
+                cat = currentScreen.cat,
+                sharedContent = currentScreen.catCard,
+                navigateToDetails = { catId, catPicture ->
+                    screen = CatScreen.List(catId, catPicture)
+                    isClicked = false
+                },
+                imageLoader = imageLoader,
+                cats = cats,
+                pagerState = pagerState,
+                isCatDownloading = isCatDownloading,
+                isUnfavouritingSavedCatConfirmation = isUnfavouritingSavedCatConfirmation,
+                isDownloadPermissionGranted = isDownloadPermissionGranted,
+                onDismissDeleteConfirmation = {},
+                onShareCat = {},
+                onFavouriteClick = {},
+                onDownloadClick = {},
+                onConfirmUnfavourite = {},
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun CatDetailsContent(
+    cat: Cat,
+    sharedContent: @Composable () -> Unit,
+    navigateToDetails: (catId: String, cat: @Composable () -> Unit) -> Unit,
+    cats: List<Cat>,
+    pagerState: PagerState,
+    isCatDownloading: Boolean,
+    imageLoader: ImageLoader,
+    isUnfavouritingSavedCatConfirmation: Boolean,
+    isDownloadPermissionGranted: Boolean?,
+    onDownloadClick: () -> Unit,
+    onFavouriteClick: () -> Unit,
+    onShareCat: () -> Unit,
+    onDismissDeleteConfirmation: () -> Unit,
+    onConfirmUnfavourite: () -> Unit,
+) {
+    val hazeState = remember { HazeState() }
+    val pictureHazeState = remember { HazeState() }
+    val configuration = LocalConfiguration.current
+    val isInLandscape by remember {
+        derivedStateOf {
+            configuration.screenWidthDp > configuration.screenHeightDp
+        }
+    }
+    var zoomFactor by remember { mutableFloatStateOf(1f) }
+
+    if (cats.getOrNull(pagerState.currentPage) == null || cats.isEmpty()) {
+        return
+    }
+
+    BackHandler {
+        navigateToDetails(cat.id, sharedContent)
+    }
+
+    Scaffold(
+        topBar = {
+            CatNexusTopBarLayout(hazeState = hazeState, isBorderVisible = zoomFactor != 1f) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    IconButton(
+                        onClick = {  },
+                        rippleRadius = 24.dp,
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_arrow_back),
+                            contentDescription = stringResource(R.string.go_back),
+                        )
+                    }
+                }
+            }
+        }
+    ) { padding ->
+        Box(
+            modifier = Modifier
+                .haze(
+                    state = hazeState,
+                    style = DefaultHazeStyle
+                )
+                .then(if (isInLandscape) Modifier.padding(padding) else Modifier.padding(bottom = padding.calculateBottomPadding()))
+                .fillMaxSize(),
+        ) {
+            HorizontalPager(
+                state = pagerState,
+                flingBehavior = PagerDefaults.flingBehavior(
+                    state = pagerState,
+                )
+            ) { index ->
+                val zoomState = rememberZoomState()
+
+                LaunchedEffect(key1 = zoomState.scale) {
+                    zoomFactor = zoomState.scale
+                }
+
+                Box(
+                    modifier = Modifier
+                        .haze(state = pictureHazeState, style = DefaultHazeStyle)
+                        .fillMaxWidth()
+                        .fillMaxHeight()
+                        .zoomable(zoomState)
+                ) {
+                    if (isUnfavouritingSavedCatConfirmation) {
+                        Dialog(
+                            onDismissRequest = onDismissDeleteConfirmation
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .padding(vertical = 24.dp, horizontal = 36.dp)
+                                    .border(
+                                        Dp.Hairline,
+                                        Gray.copy(alpha = 0.4f),
+                                        RoundedCornerShape(4.dp)
+                                    )
+                                    .hazeChild(
+                                        pictureHazeState,
+                                        shape = RoundedCornerShape(4.dp),
+                                        style = HazeStyle(
+                                            tint = Black.copy(alpha = 0.55f),
+                                            blurRadius = 24.dp
+                                        )
+                                    )
+                                    .padding(16.dp)
+                            ) {
+                                Text(text = "Are you sure you want to unfavourite this cat? It will no longer be locally stored!")
+                                Spacer(modifier = Modifier.padding(8.dp))
+                                Row(modifier = Modifier.fillMaxWidth()) {
+                                    TextButton(
+                                        modifier = Modifier.weight(1f),
+                                        onClick = onDismissDeleteConfirmation
+                                    ) {
+                                        Text(text = "Cancel")
+                                    }
+                                    Spacer(modifier = Modifier.padding(4.dp))
+                                    OutlinedButton(
+                                        modifier = Modifier.weight(1f),
+                                        onClick = {
+                                            onDismissDeleteConfirmation()
+                                            onConfirmUnfavourite()
+                                        }
+                                    ) {
+                                        Text(text = "OK")
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+
+                    sharedContent()
+//                    AsyncImage(
+//                        model = ImageRequest.Builder(LocalContext.current)
+//                            .data(cat.url)
+//                            .crossfade(true)
+//                            .build(),
+//                        modifier = Modifier
+//                            .align(Alignment.Center)
+//                            .fillMaxSize(),
+//                        contentScale = ContentScale.Fit,
+//                        contentDescription = null,
+//                        imageLoader = imageLoader,
+//                    )
+                }
+            }
+            ActionBar(
+                cat = cats[pagerState.currentPage],
+                isCatDownloading = isCatDownloading,
+                isDownloadPermissionGranted = isDownloadPermissionGranted,
+                pictureHazeState = pictureHazeState,
+                onFavouriteClick = onFavouriteClick,
+                onDownloadClick = onDownloadClick,
+                onShareCat = onShareCat
+            )
+        }
+    }
 }
 
 @Composable
 private fun CatListContent(
     state: CatListState,
     lazyGridState: LazyGridState,
+    isClicked: Boolean,
+    currentScreen: CatScreen.List,
     navigator: DestinationsNavigator,
     onFetchMoreCats: () -> Unit,
+    onCatClick: (index: Int, cat: Cat, catPicture: @Composable () -> Unit) -> Unit,
     onRetry: () -> Unit,
 ) {
     val hazeState = remember { HazeState() }
@@ -140,12 +412,12 @@ private fun CatListContent(
             }
         },
         bottomBar = {
-           CatNexusBottomBar(
-               hazeState = hazeState,
-               currentDestination = BottomBarDestination.HOME,
-               onHomeClick = { /* Ignored */ },
-               onFavouritesClick = { navigator.navigateToBottomBarDestination(FavouritesScreenDestination) }
-           )
+            CatNexusBottomBar(
+                hazeState = hazeState,
+                currentDestination = BottomBarDestination.HOME,
+                onHomeClick = { /* Ignored */ },
+                onFavouritesClick = { navigator.navigateToBottomBarDestination(FavouritesScreenDestination) }
+            )
         }
     ) { padding ->
         Column(
@@ -163,7 +435,9 @@ private fun CatListContent(
                     topContentPadding = PaddingValues(top = padding.calculateTopPadding()),
                     state = lazyGridState,
                     cats = state.cats,
-                    onCatClick = { navigator.navigate(CatDetailsScreenDestination(it)) },
+                    onCatClick = { index, cat, catPicture ->
+                        onCatClick(index, cat, catPicture)
+                    },
                     bottomSlot = {
                         Row(
                             modifier = Modifier
@@ -180,6 +454,14 @@ private fun CatListContent(
                         }
                     },
                     onScrolledToBottom = onFetchMoreCats,
+                    sharedContent = { catId, catCard ->
+                        if (catId == currentScreen.catId) {
+                            currentScreen.cat?.let { it() }
+                        } else {
+                            catCard()
+                        }
+                    },
+                    isClicked = isClicked
                 )
                 is CatListState.Error -> ErrorGettingCats(onRetry)
                 CatListState.Loading -> LoadingCats()
@@ -191,14 +473,17 @@ private fun CatListContent(
 
 @Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable
-private fun CatListContentPreview() {
+private fun Preview() {
     BackgroundSurface {
         CatListContent(
             state = CatListState.Loading,
             lazyGridState = rememberLazyGridState(),
             navigator = EmptyDestinationsNavigator,
+            currentScreen = CatScreen.List(),
             onFetchMoreCats = {},
             onRetry = {},
+            onCatClick = { _, _, _ -> },
+            isClicked = false
         )
     }
 }

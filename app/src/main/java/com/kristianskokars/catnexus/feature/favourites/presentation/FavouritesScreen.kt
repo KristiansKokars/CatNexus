@@ -39,7 +39,6 @@ import com.kristianskokars.catnexus.core.presentation.theme.Black
 import com.kristianskokars.catnexus.core.presentation.theme.Inter
 import com.kristianskokars.catnexus.core.presentation.theme.Orange
 import com.kristianskokars.catnexus.feature.appDestination
-import com.kristianskokars.catnexus.feature.cat_detail.presentation.CatDetailsScreenNavArgs
 import com.kristianskokars.catnexus.feature.destinations.CatDetailsScreenDestination
 import com.kristianskokars.catnexus.feature.destinations.CatListScreenDestination
 import com.kristianskokars.catnexus.lib.navigateToBottomBarDestination
@@ -181,11 +180,13 @@ private fun Content(
                     topContentPadding = PaddingValues(top = padding.calculateTopPadding()),
                     state = lazyGridState,
                     cats = state.cats,
-                    onCatClick = {
-                        navigator.navigate(
-                            CatDetailsScreenDestination(CatDetailsScreenNavArgs(it, showFavourites = true))
-                        )
+                    onCatClick = { _, _, _ ->
+//                        navigator.navigate(
+//                            CatDetailsScreenDestination(CatDetailsScreenNavArgs(it, showFavourites = true))
+//                        )
                     },
+                    sharedContent = { _, _ -> },
+                    isClicked = false
                 )
             }
 

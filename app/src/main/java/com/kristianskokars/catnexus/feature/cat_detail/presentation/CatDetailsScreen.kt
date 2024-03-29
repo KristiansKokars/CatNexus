@@ -292,7 +292,7 @@ fun CatDetailsContent(
 }
 
 @Composable
-private fun BoxScope.ActionBar(
+fun BoxScope.ActionBar(
     cat: Cat,
     isCatDownloading: Boolean,
     isDownloadPermissionGranted: Boolean?,
@@ -363,7 +363,7 @@ private fun BoxScope.ActionBar(
 }
 
 @Composable
-private fun IconButton(
+fun IconButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
     enabled: Boolean = true,

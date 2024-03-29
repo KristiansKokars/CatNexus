@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.kristianskokars.catnexus.core.domain.model.Cat
 import com.kristianskokars.catnexus.core.domain.repository.CatRepository
 import com.kristianskokars.catnexus.core.domain.repository.ImageSharer
-import com.kristianskokars.catnexus.feature.navArgs
 import com.kristianskokars.catnexus.lib.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -29,9 +28,9 @@ class CatDetailsViewModel @Inject constructor(
     private val navigator: Navigator,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    private val navArgs = savedStateHandle.navArgs<CatDetailsScreenNavArgs>()
-    private val showFavourites = navArgs.showFavourites
-    private val startingCatPageIndex = navArgs.catPageIndex
+//    private val navArgs = savedStateHandle.navArgs<CatDetailsScreenNavArgs>()
+    private val showFavourites = false
+    private val startingCatPageIndex = 0
     private val _page = MutableStateFlow(startingCatPageIndex)
     private val _isUnfavouritingSavedCatConfirmation = MutableStateFlow(false)
 
