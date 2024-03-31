@@ -25,12 +25,13 @@ private fun LazyGridState.isScrolledToEnd() = layoutInfo.visibleItemsInfo.lastOr
 fun CatGrid(
     modifier: Modifier = Modifier,
     cats: List<Cat>,
-    isClicked: Boolean,
+    currentCat: Cat?,
     onCatClick: (index: Int, cat: Cat, catPicture: @Composable () -> Unit) -> Unit,
     state: LazyGridState,
     topContentPadding: PaddingValues,
     sharedContent: @Composable (catId: String?, catPicture: @Composable () -> Unit) -> Unit,
     bottomSlot: @Composable () -> Unit = {},
+    onBeginTransition: (index: Int, cat: Cat) -> Unit,
     onScrolledToBottom: () -> Unit = {}
 ) {
     val currentOnScrolledToBottom by rememberUpdatedState(onScrolledToBottom)
@@ -59,7 +60,7 @@ fun CatGrid(
                     cat = cat,
                     sharedContent = sharedContent,
                     index = index,
-                    isClicked = isClicked,
+                    onBeginTransition = { index, cat -> onBeginTransition(index, cat) },
                     onCatClick = { index, cat, catPicture ->
                         onCatClick(index, cat, catPicture)
                     }

@@ -186,7 +186,8 @@ private fun Content(
 //                        )
                     },
                     sharedContent = { _, _ -> },
-                    isClicked = false
+                    currentCat = null,
+                    onBeginTransition = { _, _ -> }
                 )
             }
 

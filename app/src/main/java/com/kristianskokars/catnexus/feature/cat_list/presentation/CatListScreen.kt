@@ -32,7 +32,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -82,7 +84,6 @@ import com.kristianskokars.catnexus.lib.navigateToBottomBarDestination
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
 import com.ramcosta.composedestinations.result.ResultRecipient
 import com.ramcosta.composedestinations.spec.DestinationStyle
 import com.skydoves.orbital.Orbital
@@ -90,7 +91,9 @@ import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.haze
 import dev.chrisbanes.haze.hazeChild
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import net.engawapg.lib.zoomable.rememberZoomState
 import net.engawapg.lib.zoomable.zoomable
 
@@ -128,6 +131,11 @@ data class SharedElementData(
     val index: Int,
     val cat: Cat,
     val catPicture: @Composable () -> Unit
+)
+
+data class CatTransitionData(
+    val cat: Cat? = null,
+    val isTransitioning: Boolean = false
 )
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -171,47 +179,61 @@ fun CatListScreen(
         }
     }
 
-    var isClicked by remember { mutableStateOf(false) }
+    var currentCat by remember { mutableStateOf(CatTransitionData()) }
     var sharedElementParams by remember { mutableStateOf<SharedElementData?>(null) }
 
+
     Orbital {
-        when (val currentScreen = screen) {
-            is CatScreen.List -> {
-                CatListContent(
-                    state = state,
-                    lazyGridState = lazyGridState,
-                    navigator = navigator,
-                    currentScreen = currentScreen,
-                    onFetchMoreCats = viewModel::fetchCats,
-                    onRetry = viewModel::retryFetch,
-                    onCatClick = { index, cat, catPicture ->
-                        isClicked = true
-                        sharedElementParams = SharedElementData(index, cat, catPicture)
-                        screen = CatScreen.Details(cat, catPicture)
+        CompositionLocalProvider(LocalCurrentCat provides currentCat) {
+            when (val currentScreen = screen) {
+                is CatScreen.List -> {
+                    CatListContent(
+                        state = state,
+                        lazyGridState = lazyGridState,
+                        navigator = navigator,
+                        currentScreen = currentScreen,
+                        onFetchMoreCats = viewModel::fetchCats,
+                        onRetry = viewModel::retryFetch,
+                        onCatClick = { index, cat, catPicture ->
+                            scope.launch {
+                                sharedElementParams = SharedElementData(index, cat, catPicture)
+                                screen = CatScreen.Details(cat, catPicture)
+                                delay(50)
+                                currentCat = CatTransitionData(currentCat.cat, true)
+                            }
+                        },
+                        currentCat = currentCat.cat,
+                        onBeginTransition = { index, cat ->
+                            currentCat = CatTransitionData(cat, false)
+                        }
+                    )
+                }
+                is CatScreen.Details -> CatDetailsContent(
+                    cat = currentScreen.cat,
+                    sharedContent = currentScreen.catCard,
+                    navigateToDetails = { catId, catPicture ->
+                        scope.launch {
+                            screen = CatScreen.List(catId, catPicture)
+                            currentCat = CatTransitionData(currentCat.cat, true)
+                            delay(210)
+                            currentCat = CatTransitionData(null, false)
+                        }
                     },
-                    isClicked = isClicked
+                    imageLoader = imageLoader,
+                    cats = cats,
+                    pagerState = pagerState,
+                    isCatDownloading = isCatDownloading,
+                    isUnfavouritingSavedCatConfirmation = isUnfavouritingSavedCatConfirmation,
+                    isDownloadPermissionGranted = isDownloadPermissionGranted,
+                    onDismissDeleteConfirmation = {},
+                    onShareCat = {},
+                    onFavouriteClick = {},
+                    onDownloadClick = {},
+                    onConfirmUnfavourite = {},
                 )
             }
-            is CatScreen.Details -> CatDetailsContent(
-                cat = currentScreen.cat,
-                sharedContent = currentScreen.catCard,
-                navigateToDetails = { catId, catPicture ->
-                    screen = CatScreen.List(catId, catPicture)
-                    isClicked = false
-                },
-                imageLoader = imageLoader,
-                cats = cats,
-                pagerState = pagerState,
-                isCatDownloading = isCatDownloading,
-                isUnfavouritingSavedCatConfirmation = isUnfavouritingSavedCatConfirmation,
-                isDownloadPermissionGranted = isDownloadPermissionGranted,
-                onDismissDeleteConfirmation = {},
-                onShareCat = {},
-                onFavouriteClick = {},
-                onDownloadClick = {},
-                onConfirmUnfavourite = {},
-            )
         }
+
     }
 }
 
@@ -375,13 +397,16 @@ private fun CatDetailsContent(
     }
 }
 
+val LocalCurrentCat = compositionLocalOf { CatTransitionData() }
+
 @Composable
 private fun CatListContent(
     state: CatListState,
     lazyGridState: LazyGridState,
-    isClicked: Boolean,
+    currentCat: Cat?,
     currentScreen: CatScreen.List,
     navigator: DestinationsNavigator,
+    onBeginTransition: (index: Int, cat: Cat) -> Unit,
     onFetchMoreCats: () -> Unit,
     onCatClick: (index: Int, cat: Cat, catPicture: @Composable () -> Unit) -> Unit,
     onRetry: () -> Unit,
@@ -461,7 +486,8 @@ private fun CatListContent(
                             catCard()
                         }
                     },
-                    isClicked = isClicked
+                    onBeginTransition = onBeginTransition,
+                    currentCat = currentCat,
                 )
                 is CatListState.Error -> ErrorGettingCats(onRetry)
                 CatListState.Loading -> LoadingCats()
@@ -475,15 +501,15 @@ private fun CatListContent(
 @Composable
 private fun Preview() {
     BackgroundSurface {
-        CatListContent(
-            state = CatListState.Loading,
-            lazyGridState = rememberLazyGridState(),
-            navigator = EmptyDestinationsNavigator,
-            currentScreen = CatScreen.List(),
-            onFetchMoreCats = {},
-            onRetry = {},
-            onCatClick = { _, _, _ -> },
-            isClicked = false
-        )
+//        CatListContent(
+//            state = CatListState.Loading,
+//            lazyGridState = rememberLazyGridState(),
+//            navigator = EmptyDestinationsNavigator,
+//            currentScreen = CatScreen.List(),
+//            onFetchMoreCats = {},
+//            onRetry = {},
+//            onCatClick = { _, _, _ -> },
+//            isClicked = false
+//        )
     }
 }
