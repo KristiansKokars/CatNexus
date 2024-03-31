@@ -2,6 +2,7 @@ package com.kristianskokars.catnexus.di
 
 import android.content.Context
 import android.os.Build
+import androidx.datastore.core.DataStore
 import androidx.room.Room
 import androidx.work.WorkManager
 import coil.ImageLoader
@@ -13,8 +14,8 @@ import com.kristianskokars.catnexus.core.data.data_source.local.AndroidImageDown
 import com.kristianskokars.catnexus.core.data.data_source.local.AndroidImageSharer
 import com.kristianskokars.catnexus.core.data.data_source.local.CatDao
 import com.kristianskokars.catnexus.core.data.data_source.local.CatDatabase
-import com.kristianskokars.catnexus.core.data.data_source.local.userSettingsStore
 import com.kristianskokars.catnexus.core.data.data_source.local.PagedCatDao
+import com.kristianskokars.catnexus.core.data.data_source.local.userSettingsStore
 import com.kristianskokars.catnexus.core.data.data_source.remote.CatAPI
 import com.kristianskokars.catnexus.core.data.data_source.remote.NetworkClient
 import com.kristianskokars.catnexus.core.data.repository.OfflineFirstCatRepository

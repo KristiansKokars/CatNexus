@@ -4,6 +4,7 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -27,6 +28,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -51,9 +53,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -68,7 +72,6 @@ import com.kristianskokars.catnexus.core.presentation.ElevatedHazeStyle
 import com.kristianskokars.catnexus.core.presentation.components.BackgroundSurface
 import com.kristianskokars.catnexus.core.presentation.components.CatNexusTopBarLayout
 import com.kristianskokars.catnexus.core.presentation.components.LoadingSpinner
-import com.kristianskokars.catnexus.core.presentation.theme.Black
 import com.kristianskokars.catnexus.core.presentation.theme.Gray
 import com.kristianskokars.catnexus.core.presentation.theme.Orange
 import com.kristianskokars.catnexus.core.presentation.theme.Red
@@ -76,7 +79,6 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.result.EmptyResultBackNavigator
 import com.ramcosta.composedestinations.result.ResultBackNavigator
 import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.haze
 import dev.chrisbanes.haze.hazeChild
 import kotlinx.coroutines.flow.collectLatest
@@ -185,31 +187,35 @@ fun CatDetailsContent(
                     .hazeChild(
                         pictureHazeState,
                         shape = RoundedCornerShape(4.dp),
-                        style = HazeStyle(
-                            tint = Black.copy(alpha = 0.55f),
-                            blurRadius = 24.dp
-                        )
+                        style = ElevatedHazeStyle
                     )
                     .padding(16.dp)
             ) {
-                Text(text = "Are you sure you want to unfavourite this cat? It will no longer be locally stored!")
-                Spacer(modifier = Modifier.padding(8.dp))
+                Text(text = stringResource(R.string.confirm_unfavourite_cat), fontSize = 14.sp, textAlign = TextAlign.Center)
+                Spacer(modifier = Modifier.padding(12.dp))
                 Row(modifier = Modifier.fillMaxWidth()) {
                     TextButton(
                         modifier = Modifier.weight(1f),
-                        onClick = onDismissDeleteConfirmation
+                        onClick = onDismissDeleteConfirmation,
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = Gray
+                        )
                     ) {
-                        Text(text = "Cancel")
+                        Text(text = stringResource(R.string.cancel))
                     }
                     Spacer(modifier = Modifier.padding(4.dp))
                     OutlinedButton(
                         modifier = Modifier.weight(1f),
+                        border = BorderStroke(
+                            width = Dp.Hairline,
+                            color = Gray.copy(alpha = 0.4f),
+                        ),
                         onClick = {
                             onDismissDeleteConfirmation()
                             onConfirmUnfavourite()
                         }
                     ) {
-                        Text(text = "OK")
+                        Text(text = stringResource(R.string.ok))
                     }
                 }
             }
