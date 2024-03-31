@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.kristianskokars.catnexus.R
@@ -47,7 +48,7 @@ fun OrientationSwitch(
             Icon(
                 modifier = Modifier.size(16.dp).rotate(90 * rotation),
                 painter = painterResource(id = R.drawable.ic_vertical_orientation),
-                contentDescription = null
+                contentDescription = stringResource(R.string.cat_swipe_direction)
             )
         }
     )

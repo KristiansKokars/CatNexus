@@ -1,5 +1,6 @@
 package com.kristianskokars.catnexus.lib
 
+import androidx.annotation.DrawableRes
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import javax.inject.Inject
@@ -16,4 +17,8 @@ class Toaster @Inject constructor() {
 
 }
 
-data class ToastMessage(val text: UIText)
+data class ToastMessage(val text: UIText, val icon: ToastIcon? = null)
+
+sealed interface ToastIcon {
+    data class Resource(@DrawableRes val id: Int) : ToastIcon
+}

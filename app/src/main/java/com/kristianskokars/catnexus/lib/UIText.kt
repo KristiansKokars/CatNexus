@@ -4,9 +4,9 @@ import android.content.Context
 import androidx.annotation.StringRes
 
 sealed class UIText {
-    data class StringResource(@StringRes val id: Int) : UIText()
+    class StringResource(@StringRes val id: Int, val argument: String = "") : UIText()
 
     fun get(context: Context) = when (this) {
-        is StringResource -> context.getString(id)
+        is StringResource -> context.getString(id, argument)
     }
 }
