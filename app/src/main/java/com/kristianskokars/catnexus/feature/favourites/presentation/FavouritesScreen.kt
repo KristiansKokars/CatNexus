@@ -131,7 +131,8 @@ private fun Content(
         topBar = {
             CatNexusDefaultTopBar(
                 hazeState = hazeState,
-                isBorderVisible = lazyGridState.canScrollBackward
+                isBorderVisible = lazyGridState.canScrollBackward,
+                navigator = navigator
             )
         },
         bottomBar = {

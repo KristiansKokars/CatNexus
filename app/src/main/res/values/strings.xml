@@ -22,4 +22,13 @@
     <string name="home">Home</string>
     <string name="favourites">Favourites</string>
     <string name="share_cat">Share cat</string>
+    <string name="open_settings">Open Settings</string>
+    <string name="show_download_notifications_desc">Show download notifications for cats outside the app</string>
+    <string name="download_notifications">Download Notifications</string>
+    <string name="swipe_direction_desc">Adjusts the direction needed to swipe between cats</string>
+    <string name="swipe_direction">Swipe Direction</string>
+    <string name="settings">Settings</string>
+    <string name="reset_to_default_settings">Reset To Default Settings</string>
+    <string name="made_with_love"><![CDATA[Made with <3]]></string>
+    <string name="by_kristians">By Kristiāns Kokars</string>
 </resources>

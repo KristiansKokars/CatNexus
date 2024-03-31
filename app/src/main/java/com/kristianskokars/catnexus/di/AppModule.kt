@@ -2,6 +2,7 @@ package com.kristianskokars.catnexus.di
 
 import android.content.Context
 import android.os.Build
+import androidx.datastore.core.DataStore
 import androidx.room.Room
 import androidx.work.WorkManager
 import coil.ImageLoader
@@ -13,9 +14,11 @@ import com.kristianskokars.catnexus.core.data.data_source.local.AndroidImageDown
 import com.kristianskokars.catnexus.core.data.data_source.local.AndroidImageSharer
 import com.kristianskokars.catnexus.core.data.data_source.local.CatDao
 import com.kristianskokars.catnexus.core.data.data_source.local.CatDatabase
+import com.kristianskokars.catnexus.core.data.data_source.local.userSettingsStore
 import com.kristianskokars.catnexus.core.data.data_source.remote.CatAPI
 import com.kristianskokars.catnexus.core.data.data_source.remote.NetworkClient
 import com.kristianskokars.catnexus.core.data.repository.OfflineFirstCatRepository
+import com.kristianskokars.catnexus.core.domain.model.UserSettings
 import com.kristianskokars.catnexus.core.domain.repository.CatRepository
 import com.kristianskokars.catnexus.core.domain.repository.ImageDownloader
 import com.kristianskokars.catnexus.core.domain.repository.ImageSharer
@@ -86,4 +89,8 @@ object AppModule {
     @Provides
     @Singleton
     fun provideImageSharer(@ApplicationContext context: Context): ImageSharer = AndroidImageSharer(context, CoroutineScope(Dispatchers.IO))
+
+    @Provides
+    @Singleton
+    fun provideUserSettingStore(@ApplicationContext context: Context): DataStore<UserSettings> = context.userSettingsStore
 }
