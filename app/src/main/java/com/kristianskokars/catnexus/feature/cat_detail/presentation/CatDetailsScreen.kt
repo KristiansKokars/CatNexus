@@ -42,6 +42,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -82,6 +83,7 @@ import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.haze
 import dev.chrisbanes.haze.hazeChild
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import net.engawapg.lib.zoomable.rememberZoomState
 import net.engawapg.lib.zoomable.zoomable
 
@@ -113,6 +115,7 @@ fun CatDetailsScreen(
     }
     val pagerState = rememberPagerState(initialPage = navArgsDelegate.catPageIndex, pageCount = { pageCount })
     val swipeDirection by viewModel.swipeDirection.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(pagerState) {
         snapshotFlow { pagerState.currentPage }.collectLatest { page ->
@@ -137,7 +140,12 @@ fun CatDetailsScreen(
         onFavouriteClick = viewModel::toggleFavouriteCat,
         onShareCat = viewModel::shareCat,
         onDismissDeleteConfirmation = viewModel::dismissDeleteConfirmation,
-        onConfirmUnfavourite = viewModel::confirmUnfavourite
+        onConfirmUnfavourite = {
+            scope.launch {
+                viewModel.confirmUnfavourite()
+                pagerState.scrollToPage(pagerState.currentPage - 1)
+            }
+        }
     )
 }
 
