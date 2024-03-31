@@ -1,30 +1,28 @@
 package com.kristianskokars.catnexus.core.data
 
 import com.kristianskokars.catnexus.core.data.data_source.local.CatDao
-import com.kristianskokars.catnexus.core.domain.model.Cat
+import com.kristianskokars.catnexus.core.data.model.CatEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 
 class FakeCatDao : CatDao {
-    private val storedCats = MutableStateFlow<List<Cat>>(emptyList())
+    private val storedCats = MutableStateFlow<List<CatEntity>>(emptyList())
 
-    override fun getCats() = storedCats
-    override fun getFavouritedCats(): Flow<List<Cat>> = storedCats.map { cats ->
+    override fun getFavouritedCats(): Flow<List<CatEntity>> = storedCats.map { cats ->
         cats.filter { it.isFavourited }
     }
 
-    override fun getCat(catId: String): Flow<Cat> = storedCats.map { cats ->
+    override fun getCat(catId: String): Flow<CatEntity> = storedCats.map { cats ->
         cats.find { it.id == catId } ?: throw RuntimeException("Cat not found")
     }
 
-    override suspend fun addCats(cats: List<Cat>) {
-        val catIds = cats.map { it.id }
+    override suspend fun addCat(cat: CatEntity) {
         storedCats.update { storedCats ->
-            val storedCatsWithoutConflicts = storedCats.filter { it.id in catIds }
+            val storedCatsWithoutConflicts = storedCats.filter { it.id == cat.id }
             storedCatsWithoutConflicts.toMutableList().apply {
-                addAll(cats)
+                add(cat)
             }
             return@update storedCatsWithoutConflicts
         }
@@ -36,7 +34,7 @@ class FakeCatDao : CatDao {
         }
     }
 
-    override suspend fun updateCat(cat: Cat) {
+    override suspend fun updateCat(cat: CatEntity) {
        storedCats.update { storedCats ->
            val index = storedCats.indexOfFirst { it.id == cat.id }.takeIf { it != -1 } ?: return@update storedCats
            val newStoredCats = storedCats.toMutableList()
