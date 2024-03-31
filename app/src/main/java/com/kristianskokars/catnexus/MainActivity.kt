@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
@@ -36,10 +37,14 @@ class MainActivity : ComponentActivity() {
     @Inject lateinit var toaster: Toaster
     @Inject lateinit var navigator: Navigator
 
+    private val viewModel by viewModels<MainViewModel>()
+
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter") // we are not using anything that needs the safety padding
     @OptIn(ExperimentalMaterialNavigationApi::class, ExperimentalAnimationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
+        installSplashScreen().apply {
+            setKeepOnScreenCondition { !viewModel.isInitialized.value }
+        }
         super.onCreate(savedInstanceState)
 
         enableEdgeToEdge(

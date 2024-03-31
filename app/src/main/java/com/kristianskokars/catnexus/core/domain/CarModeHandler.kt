@@ -10,19 +10,24 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class CarModeListener @Inject constructor(
+class CarModeHandler @Inject constructor(
     private val store: DataStore<UserSettings>,
     private val toaster: Toaster,
 ) {
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.Default)
     private var timeoutJob: Job? = null
     private var clicks = 0
+
+    val isInCarMode = store.data.map { it.isInCarMode }.stateIn(scope, SharingStarted.WhileSubscribed(), false)
 
     suspend fun onCatNexusLogoClick() {
         if (store.data.first().isCarModeUnlocked) return
