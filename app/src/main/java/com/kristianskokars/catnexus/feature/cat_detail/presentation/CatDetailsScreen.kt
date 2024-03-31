@@ -4,6 +4,7 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
@@ -47,6 +48,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -145,7 +147,8 @@ fun CatDetailsScreen(
                 viewModel.confirmUnfavourite()
                 pagerState.scrollToPage(pagerState.currentPage - 1)
             }
-        }
+        },
+        onToggleSwipeDirection = viewModel::onToggleSwipeDirection
     )
 }
 
@@ -165,6 +168,7 @@ fun CatDetailsContent(
     onShareCat: () -> Unit,
     onDismissDeleteConfirmation: () -> Unit,
     onConfirmUnfavourite: () -> Unit,
+    onToggleSwipeDirection: () -> Unit,
 ) {
     val hazeState = remember { HazeState() }
     val pictureHazeState = remember { HazeState() }
@@ -248,6 +252,24 @@ fun CatDetailsContent(
                             contentDescription = stringResource(R.string.go_back),
                         )
                     }
+                    Spacer(modifier = Modifier.weight(1f))
+                    IconButton(
+                        onClick = onToggleSwipeDirection,
+                        rippleRadius = 24.dp,
+                    ) {
+                        val rotation by animateFloatAsState(
+                            targetValue = if (swipeDirection == CatSwipeDirection.HORIZONTAL) 1f else 0f,
+                            label = "Orientation Rotation"
+                        )
+
+                        Icon(
+                            modifier = Modifier
+                                .rotate(90 * rotation),
+                            painter = painterResource(id = R.drawable.ic_vertical_orientation),
+                            contentDescription = stringResource(R.string.cat_swipe_direction)
+                        )
+                    }
+                    Spacer(modifier = Modifier.padding(8.dp))
                 }
             }
         }
@@ -459,7 +481,8 @@ private fun CatDetailsScreenPreview() {
             onFavouriteClick = {},
             onShareCat = {},
             onDismissDeleteConfirmation = {},
-            onConfirmUnfavourite = {}
+            onConfirmUnfavourite = {},
+            onToggleSwipeDirection = {}
         )
     }
 }

@@ -4,6 +4,7 @@ import androidx.datastore.core.DataStore
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kristianskokars.catnexus.R
 import com.kristianskokars.catnexus.core.domain.model.Cat
 import com.kristianskokars.catnexus.core.domain.model.CatSwipeDirection
 import com.kristianskokars.catnexus.core.domain.model.UserSettings
@@ -11,6 +12,10 @@ import com.kristianskokars.catnexus.core.domain.repository.CatRepository
 import com.kristianskokars.catnexus.core.domain.repository.ImageSharer
 import com.kristianskokars.catnexus.feature.navArgs
 import com.kristianskokars.catnexus.lib.Navigator
+import com.kristianskokars.catnexus.lib.ToastIcon
+import com.kristianskokars.catnexus.lib.ToastMessage
+import com.kristianskokars.catnexus.lib.Toaster
+import com.kristianskokars.catnexus.lib.UIText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,7 +35,8 @@ class CatDetailsViewModel @Inject constructor(
     private val repository: CatRepository,
     private val imageSharer: ImageSharer,
     private val navigator: Navigator,
-    userSettingsStore: DataStore<UserSettings>,
+    private val userSettingsStore: DataStore<UserSettings>,
+    private val toaster: Toaster,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val navArgs = savedStateHandle.navArgs<CatDetailsScreenNavArgs>()
@@ -111,6 +117,33 @@ class CatDetailsViewModel @Inject constructor(
         }
 
         _page.update { page }
+    }
+
+    fun onToggleSwipeDirection() {
+        viewModelScope.launch {
+            userSettingsStore.updateData {
+                val newDirection = it.swipeDirection.flip()
+                // TODO: make string resource out of this
+                val text = when (newDirection) {
+                    CatSwipeDirection.VERTICAL -> "Vertical"
+                    CatSwipeDirection.HORIZONTAL -> "Horizontal"
+                }
+                viewModelScope.launch {
+                    toaster.show(
+                        ToastMessage(
+                            UIText.StringResource(
+                                R.string.flipped_direction_notification,
+                                text
+                            ),
+                            ToastIcon.Resource(
+                                R.drawable.ic_vertical_orientation
+                            )
+                        )
+                    )
+                }
+                it.copy(swipeDirection = newDirection)
+            }
+        }
     }
 
     private fun currentCat(): Cat {

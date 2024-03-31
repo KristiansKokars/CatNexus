@@ -38,4 +38,6 @@
     <string name="confirm_unfavourite_cat">Are you sure you want to unfavourite this cat? It will no longer be locally stored!</string>
     <string name="cancel">Cancel</string>
     <string name="ok">OK</string>
+    <string name="cat_swipe_direction">Cat Swipe Direction</string>
+    <string name="flipped_direction_notification">Changed swipe direction to %1$s</string>
 </resources>
