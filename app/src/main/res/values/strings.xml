@@ -31,4 +31,8 @@
     <string name="reset_to_default_settings">Reset To Default Settings</string>
     <string name="made_with_love"><![CDATA[Made with <3]]></string>
     <string name="by_kristians">By Kristiāns Kokars</string>
+    <string name="unlocked_car_mode">Unlocked car mode</string>
+    <string name="car_mode">Car Mode</string>
+    <string name="car_mode_desc">Hehe car go brrrrr</string>
+    <string name="car_nexus">Car Nexus</string>
 </resources>

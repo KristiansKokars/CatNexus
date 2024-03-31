@@ -1,13 +1,17 @@
 package com.kristianskokars.catnexus.feature.cat_list.presentation
 
+import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kristianskokars.catnexus.core.domain.CarModeListener
 import com.kristianskokars.catnexus.core.domain.model.ServerError
+import com.kristianskokars.catnexus.core.domain.model.UserSettings
 import com.kristianskokars.catnexus.core.domain.repository.CatRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -16,9 +20,15 @@ import javax.inject.Inject
 @HiltViewModel
 class CatListViewModel @Inject constructor(
     private val repository: CatRepository,
+    private val carModeListener: CarModeListener,
+    userSettingsStore: DataStore<UserSettings>
 ) : ViewModel() {
     private val isLoading = MutableStateFlow(false)
     private val hasServerError = MutableStateFlow<ServerError?>(null)
+
+    val isInCarMode = userSettingsStore.data
+        .map { it.isInCarMode }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     val state = combine(
         repository.cats,
@@ -59,5 +69,11 @@ class CatListViewModel @Inject constructor(
     fun retryFetch() {
         hasServerError.update { null }
         fetchCats()
+    }
+
+    fun onCatNexusLogoClick() {
+        viewModelScope.launch {
+            carModeListener.onCatNexusLogoClick()
+        }
     }
 }

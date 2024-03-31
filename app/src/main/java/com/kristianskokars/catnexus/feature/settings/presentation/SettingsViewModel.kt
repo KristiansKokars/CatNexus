@@ -19,7 +19,9 @@ class SettingsViewModel @Inject constructor(
         .map { data ->
             SettingsState(
                 swipeDirection = data.swipeDirection,
-                showDownloadNotifications = data.showDownloadNotifications
+                showDownloadNotifications = data.showDownloadNotifications,
+                isCarModeUnlocked = data.isCarModeUnlocked,
+                isInCarMode = data.isInCarMode
             )
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SettingsState())
@@ -35,6 +37,11 @@ class SettingsViewModel @Inject constructor(
                 SettingsEvent.ToggleSwipeDirection -> {
                     store.updateData { data ->
                         data.copy(swipeDirection = data.swipeDirection.flip())
+                    }
+                }
+                SettingsEvent.ToggleCarMode -> {
+                    store.updateData { data ->
+                        data.copy(isInCarMode = !data.isInCarMode)
                     }
                 }
                 SettingsEvent.ResetToDefaultSettings -> store.updateData { UserSettings() }

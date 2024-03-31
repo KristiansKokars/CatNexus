@@ -6,4 +6,6 @@ import kotlinx.serialization.Serializable
 data class UserSettings(
     val swipeDirection: CatSwipeDirection = CatSwipeDirection.HORIZONTAL,
     val showDownloadNotifications: Boolean = true,
+    val isCarModeUnlocked: Boolean = false,
+    val isInCarMode: Boolean = false,
 )
