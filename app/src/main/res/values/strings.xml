@@ -35,4 +35,7 @@
     <string name="car_mode">Car Mode</string>
     <string name="car_mode_desc">Hehe car go brrrrr</string>
     <string name="car_nexus">Car Nexus</string>
+    <string name="confirm_unfavourite_cat">Are you sure you want to unfavourite this cat? It will no longer be locally stored!</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
 </resources>

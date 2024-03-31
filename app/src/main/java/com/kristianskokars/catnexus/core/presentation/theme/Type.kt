@@ -18,5 +18,10 @@ val Typography = Typography(
         fontFamily = Inter,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
+    ),
+    labelLarge = TextStyle(
+        fontFamily = Inter,
+        fontWeight = FontWeight.Medium,
+        fontSize = 16.sp,
     )
 )

@@ -8,6 +8,7 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.kristianskokars.catnexus.core.data.data_source.local.CatDao
+import com.kristianskokars.catnexus.core.data.data_source.local.PagedCatDao
 import com.kristianskokars.catnexus.core.data.data_source.remote.CatAPI
 import com.kristianskokars.catnexus.core.data.worker.DownloadImageWorker
 import com.kristianskokars.catnexus.core.domain.model.Cat
@@ -18,25 +19,27 @@ import com.kristianskokars.catnexus.lib.Ok
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class OfflineFirstCatRepository(
-    private val local: CatDao,
+    private val catDao: CatDao,
+    private val pagedCatDao: PagedCatDao,
     private val remote: CatAPI,
     private val workManager: WorkManager,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : CatRepository {
     private val scope = CoroutineScope(ioDispatcher)
-    override val cats: Flow<List<Cat>> = local.getCats().flowOn(ioDispatcher)
+    override val cats: Flow<List<Cat>> = pagedCatDao.getPagedCats().map { list -> list.map { it.toCat() } }.flowOn(ioDispatcher)
 
-    override fun getFavouritedCats(): Flow<List<Cat>> = local.getFavouritedCats()
+    override fun getFavouritedCats(): Flow<List<Cat>> = catDao.getFavouritedCats().map { list -> list.map { it.toCat() } }
 
     override suspend fun refreshCats(shouldClearPrevious: Boolean) =
         try {
@@ -47,15 +50,17 @@ class OfflineFirstCatRepository(
                     .map { requestCats() }
                     .awaitAll()
                     .flatten()
-                    .map { it.toCat() }
-                local.insertNewCats(newCats, shouldClearPrevious)
+                    .map { it.toPagedCat() }
+                pagedCatDao.insertNewCats(newCats, shouldClearPrevious)
                 Ok()
             }
         } catch (exception: Exception) {
             Err(ServerError)
         }
 
-    override fun getCat(id: String): Flow<Cat> = local.getCat(id)
+    override fun getPagedCat(id: String): Flow<Cat> = pagedCatDao.getCat(id).map { it.toCat() }
+
+    override fun getSavedCat(id: String): Flow<Cat> = catDao.getCat(id).map { it.toCat() }
 
     override fun saveCatImage(cat: Cat) {
         scope.launch {
@@ -83,11 +88,22 @@ class OfflineFirstCatRepository(
         }
     }
 
-    override fun toggleFavouriteForCat(id: String) {
-        scope.launch {
-            val cat = local.getCat(id).first()
-            local.updateCat(cat.copy(isFavourited = !cat.isFavourited))
+    override suspend fun toggleFavouriteForCat(id: String) = withContext(NonCancellable) {
+        val pagedCat = pagedCatDao.getCat(id).firstOrNull()
+        val updatedPagedCat = pagedCat?.copy(isFavourited = !pagedCat.isFavourited)
+        if (updatedPagedCat != null) {
+            pagedCatDao.updateCat(updatedPagedCat)
         }
+
+        val cat = catDao.getCat(id).firstOrNull()
+        if (cat == null && updatedPagedCat != null) {
+            catDao.addCat(updatedPagedCat.toCatEntity())
+            return@withContext
+        }
+        if (cat == null) return@withContext
+
+        // TODO: clean from the local cache later as the user does not want to save it (add that removing it from favourite will unsave it?)
+        catDao.updateCat(cat.copy(isFavourited = !cat.isFavourited))
     }
 
     override fun isCatDownloading(catId: String): Flow<Boolean> {

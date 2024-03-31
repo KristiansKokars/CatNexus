@@ -19,12 +19,14 @@ import com.google.accompanist.navigation.material.ExperimentalMaterialNavigation
 import com.kristianskokars.catnexus.core.presentation.components.BackgroundSurface
 import com.kristianskokars.catnexus.core.presentation.components.BelowTopBarDownloadToast
 import com.kristianskokars.catnexus.feature.NavGraphs
+import com.kristianskokars.catnexus.lib.Navigator
 import com.kristianskokars.catnexus.lib.Toaster
 import com.kristianskokars.catnexus.lib.launchImmediate
 import com.kristianskokars.catnexus.lib.screenSlideTransitionAnimations
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.animations.rememberAnimatedNavHostEngine
 import com.ramcosta.composedestinations.navigation.dependency
+import com.ramcosta.composedestinations.navigation.navigate
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -32,6 +34,7 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
     @Inject lateinit var imageLoader: ImageLoader
     @Inject lateinit var toaster: Toaster
+    @Inject lateinit var navigator: Navigator
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter") // we are not using anything that needs the safety padding
     @OptIn(ExperimentalMaterialNavigationApi::class, ExperimentalAnimationApi::class)
@@ -47,6 +50,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             val snackbarHostState = remember { SnackbarHostState() }
             val context = LocalContext.current
+            val engine = rememberAnimatedNavHostEngine(
+                rootDefaultAnimations = screenSlideTransitionAnimations,
+            )
+            val navController = engine.rememberNavController()
 
             LaunchedEffect(key1 = Unit) {
                 launchImmediate {
@@ -56,14 +63,24 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
+            LaunchedEffect(key1 = Unit) {
+                launchImmediate {
+                    navigator.navigationActions.collect { navAction ->
+                        when (navAction) {
+                            Navigator.Action.GoBack -> navController.navigateUp()
+                            is Navigator.Action.Navigate -> navController.navigate(navAction.direction)
+                        }
+                    }
+                }
+            }
+
             BackgroundSurface {
                 Scaffold(
                     snackbarHost = { BelowTopBarDownloadToast(hostState = snackbarHostState) }
                 ) {
                     DestinationsNavHost(
-                        engine = rememberAnimatedNavHostEngine(
-                            rootDefaultAnimations = screenSlideTransitionAnimations,
-                        ),
+                        engine = engine,
+                        navController = navController,
                         dependenciesContainerBuilder = {
                             dependency(imageLoader)
                         },
