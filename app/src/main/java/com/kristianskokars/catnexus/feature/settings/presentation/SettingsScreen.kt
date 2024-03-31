@@ -163,6 +163,35 @@ private fun Content(
                             onCheckedChange = { onEvent(SettingsEvent.ToggleDownloadNotificationsShowing) }
                         )
                     }
+                    if (state.isCarModeUnlocked) {
+                        Spacer(modifier = Modifier.size(24.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Column(
+                                modifier = Modifier.fillMaxWidth(0.7f)
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.car_mode),
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Text(
+                                    text = stringResource(R.string.car_mode_desc),
+                                    color = Gray,
+                                    lineHeight = 16.sp,
+                                    fontSize = 12.sp
+                                )
+                            }
+                            Spacer(modifier = Modifier.weight(1f))
+                            CatNexusSwitch(
+                                modifier = Modifier.weight(1f, false),
+                                checked = state.isInCarMode,
+                                onCheckedChange = { onEvent(SettingsEvent.ToggleCarMode) }
+                            )
+                        }
+                    }
                 }
                 item {
                     Spacer(modifier = Modifier.size(24.dp))

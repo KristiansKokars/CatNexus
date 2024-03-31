@@ -89,6 +89,7 @@ fun CatListScreen(
     resultRecipient: ResultRecipient<CatDetailsScreenDestination, Int>
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val isInCarMode by viewModel.isInCarMode.collectAsStateWithLifecycle()
     val lazyGridState = rememberLazyGridState()
 
     resultRecipient.scrollToReturnedItemIndex(lazyGridState = lazyGridState)
@@ -97,8 +98,10 @@ fun CatListScreen(
         state = state,
         lazyGridState = lazyGridState,
         navigator = navigator,
+        isInCarMode = isInCarMode,
         onFetchMoreCats = viewModel::fetchCats,
         onRetry = viewModel::retryFetch,
+        onCatNexusLogoClick = viewModel::onCatNexusLogoClick
     )
 }
 
@@ -107,8 +110,10 @@ private fun CatListContent(
     state: CatListState,
     lazyGridState: LazyGridState,
     navigator: DestinationsNavigator,
+    isInCarMode: Boolean,
     onFetchMoreCats: () -> Unit,
     onRetry: () -> Unit,
+    onCatNexusLogoClick: () -> Unit,
 ) {
     val hazeState = remember { HazeState() }
 
@@ -116,7 +121,9 @@ private fun CatListContent(
         topBar = {
             CatNexusDefaultTopBar(
                 hazeState = hazeState,
+                isInCarMode = isInCarMode,
                 isBorderVisible = lazyGridState.canScrollBackward,
+                onCatNexusLogoClick = onCatNexusLogoClick,
                 navigator = navigator
             )
         },
@@ -176,10 +183,12 @@ private fun CatListContentPreview() {
     BackgroundSurface {
         CatListContent(
             state = CatListState.Loading,
+            isInCarMode = false,
             lazyGridState = rememberLazyGridState(),
             navigator = EmptyDestinationsNavigator,
             onFetchMoreCats = {},
             onRetry = {},
+            onCatNexusLogoClick = {}
         )
     }
 }

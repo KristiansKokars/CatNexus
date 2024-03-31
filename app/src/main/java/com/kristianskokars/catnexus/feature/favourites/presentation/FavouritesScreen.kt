@@ -90,6 +90,7 @@ fun FavouritesScreen(
     resultRecipient: ResultRecipient<CatDetailsScreenDestination, Int>
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val isInCarMode by viewModel.isInCarMode.collectAsStateWithLifecycle()
     val lazyGridState = rememberLazyGridState()
 
     resultRecipient.scrollToReturnedItemIndex(lazyGridState = lazyGridState)
@@ -97,7 +98,9 @@ fun FavouritesScreen(
     Content(
         navigator = navigator,
         lazyGridState = lazyGridState,
-        state = state
+        state = state,
+        isInCarMode = isInCarMode,
+        onCatNexusLogoClick = viewModel::onCatNexusLogoClick
     )
 }
 
@@ -106,6 +109,8 @@ private fun Content(
     navigator: DestinationsNavigator,
     lazyGridState: LazyGridState,
     state: FavouritesState,
+    isInCarMode: Boolean,
+    onCatNexusLogoClick: () -> Unit,
 ) {
     val hazeState = remember { HazeState() }
     val noFavouriteString = buildAnnotatedString {
@@ -132,7 +137,9 @@ private fun Content(
             CatNexusDefaultTopBar(
                 hazeState = hazeState,
                 isBorderVisible = lazyGridState.canScrollBackward,
-                navigator = navigator
+                navigator = navigator,
+                isInCarMode = isInCarMode,
+                onCatNexusLogoClick = onCatNexusLogoClick,
             )
         },
         bottomBar = {
@@ -201,7 +208,9 @@ private fun Preview() {
         Content(
             navigator = EmptyDestinationsNavigator,
             lazyGridState = rememberLazyGridState(),
-            state = FavouritesState()
+            state = FavouritesState(),
+            isInCarMode = false,
+            onCatNexusLogoClick = {}
         )
     }
 }
