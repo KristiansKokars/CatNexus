@@ -8,6 +8,7 @@ import android.content.pm.ServiceInfo
 import android.net.Uri
 import android.os.Build
 import androidx.core.app.NotificationCompat
+import androidx.datastore.core.DataStore
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
@@ -15,12 +16,14 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.kristianskokars.catnexus.R
 import com.kristianskokars.catnexus.core.CHANNEL_ID
+import com.kristianskokars.catnexus.core.domain.model.UserSettings
 import com.kristianskokars.catnexus.core.domain.repository.ImageDownloader
 import com.kristianskokars.catnexus.lib.ToastMessage
 import com.kristianskokars.catnexus.lib.Toaster
 import com.kristianskokars.catnexus.lib.UIText
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.flow.first
 
 @HiltWorker
 class DownloadImageWorker @AssistedInject constructor(
@@ -28,6 +31,7 @@ class DownloadImageWorker @AssistedInject constructor(
     @Assisted parameters: WorkerParameters,
     private val toaster: Toaster,
     private val imageDownloader: ImageDownloader,
+    private val userSettingsStore: DataStore<UserSettings>,
 ) : CoroutineWorker(context, parameters) {
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -35,7 +39,10 @@ class DownloadImageWorker @AssistedInject constructor(
         val downloadUrl = inputData.getString(DOWNLOAD_IMAGE_URL) ?: return Result.failure()
         val fileName = inputData.getString(OUTPUT_FILE_NAME) ?: return Result.failure()
 
-        setForeground(createForegroundInfo(downloadUrl))
+        if (userSettingsStore.data.first().showDownloadNotifications) {
+            setForeground(createForegroundInfo(downloadUrl))
+        }
+
         return imageDownloader.downloadImage(downloadUrl, fileName).handle(
             onSuccess = { fileUri ->
                 showFinishedNotification(downloadUrl, fileUri)
@@ -71,43 +78,49 @@ class DownloadImageWorker @AssistedInject constructor(
     }
 
     private suspend fun showFinishedNotification(downloadUrl: String, fileUri: Uri) {
-        val contentTitle = context.getString(R.string.downloaded_picture)
-        val contentText = context.getString(R.string.downloaded_from, downloadUrl)
-
-        val openImageInGallery =
-            PendingIntent.getActivity(
-                context,
-                OPEN_IMAGE_REQUEST_CODE,
-                Intent(Intent.ACTION_VIEW, fileUri),
-                PendingIntent.FLAG_IMMUTABLE,
-            )
-        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setContentTitle(contentTitle)
-            .setContentText(contentText)
-            .setSmallIcon(R.drawable.ic_cat)
-            .setContentIntent(openImageInGallery)
-            .build()
-
-        with(notificationManager) {
-            notify(COMPLETED_DOWNLOAD_NOTIFICATION_ID, notification)
-        }
         toaster.show(ToastMessage(UIText.StringResource(R.string.picture_downloaded)))
+
+        if (userSettingsStore.data.first().showDownloadNotifications) {
+            val contentTitle = context.getString(R.string.downloaded_picture)
+            val contentText = context.getString(R.string.downloaded_from, downloadUrl)
+
+            val openImageInGallery =
+                PendingIntent.getActivity(
+                    context,
+                    OPEN_IMAGE_REQUEST_CODE,
+                    Intent(Intent.ACTION_VIEW, fileUri),
+                    PendingIntent.FLAG_IMMUTABLE,
+                )
+            val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+                .setContentTitle(contentTitle)
+                .setContentText(contentText)
+                .setSmallIcon(R.drawable.ic_cat)
+                .setContentIntent(openImageInGallery)
+                .build()
+
+            with(notificationManager) {
+                notify(COMPLETED_DOWNLOAD_NOTIFICATION_ID, notification)
+            }
+        }
     }
 
     private suspend fun showFailedNotification(downloadUrl: String) {
-        val contentTitle = context.getString(R.string.error_downloading_picture_title)
-        val contentText = context.getString(R.string.error_downloading_picture_text, downloadUrl)
-
-        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setContentTitle(contentTitle)
-            .setContentText(contentText)
-            .setSmallIcon(R.drawable.ic_cat)
-            .build()
-
-        with(notificationManager) {
-            notify(FAILED_DOWNLOAD_NOTIFICATION_ID, notification)
-        }
         toaster.show(ToastMessage(UIText.StringResource(R.string.failed_download)))
+
+        if (userSettingsStore.data.first().showDownloadNotifications) {
+            val contentTitle = context.getString(R.string.error_downloading_picture_title)
+            val contentText = context.getString(R.string.error_downloading_picture_text, downloadUrl)
+
+            val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+                .setContentTitle(contentTitle)
+                .setContentText(contentText)
+                .setSmallIcon(R.drawable.ic_cat)
+                .build()
+
+            with(notificationManager) {
+                notify(FAILED_DOWNLOAD_NOTIFICATION_ID, notification)
+            }
+        }
     }
 
     companion object {

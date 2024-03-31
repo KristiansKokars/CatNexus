@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,11 +19,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavBackStackEntry
@@ -33,13 +30,12 @@ import com.kristianskokars.catnexus.core.presentation.components.BackgroundSurfa
 import com.kristianskokars.catnexus.core.presentation.components.BottomBarDestination
 import com.kristianskokars.catnexus.core.presentation.components.CatGrid
 import com.kristianskokars.catnexus.core.presentation.components.CatNexusBottomBar
-import com.kristianskokars.catnexus.core.presentation.components.CatNexusTopBarLayout
+import com.kristianskokars.catnexus.core.presentation.components.CatNexusDefaultTopBar
 import com.kristianskokars.catnexus.core.presentation.components.ErrorGettingCats
 import com.kristianskokars.catnexus.core.presentation.components.LoadingCats
 import com.kristianskokars.catnexus.core.presentation.components.LoadingSpinner
 import com.kristianskokars.catnexus.core.presentation.scrollToReturnedItemIndex
 import com.kristianskokars.catnexus.core.presentation.theme.Black
-import com.kristianskokars.catnexus.core.presentation.theme.Orange
 import com.kristianskokars.catnexus.feature.appDestination
 import com.kristianskokars.catnexus.feature.destinations.CatDetailsScreenDestination
 import com.kristianskokars.catnexus.feature.destinations.FavouritesScreenDestination
@@ -118,26 +114,11 @@ private fun CatListContent(
 
     Scaffold(
         topBar = {
-            CatNexusTopBarLayout(
+            CatNexusDefaultTopBar(
                 hazeState = hazeState,
-                isBorderVisible = lazyGridState.canScrollBackward
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_cat_large),
-                        contentDescription = null,
-                        tint = Orange,
-                    )
-                    Text(
-                        modifier = Modifier.padding(8.dp),
-                        text = stringResource(R.string.cat_infinity),
-                        fontSize = 24.sp,
-                    )
-                }
-            }
+                isBorderVisible = lazyGridState.canScrollBackward,
+                navigator = navigator
+            )
         },
         bottomBar = {
            CatNexusBottomBar(
@@ -187,7 +168,6 @@ private fun CatListContent(
             }
         }
     }
-
 }
 
 @Preview(uiMode = UI_MODE_NIGHT_YES)

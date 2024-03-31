@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerDefaults
 import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.ripple.rememberRipple
@@ -55,6 +56,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.kristianskokars.catnexus.R
 import com.kristianskokars.catnexus.core.domain.model.Cat
+import com.kristianskokars.catnexus.core.domain.model.CatSwipeDirection
 import com.kristianskokars.catnexus.core.presentation.DefaultHazeStyle
 import com.kristianskokars.catnexus.core.presentation.ElevatedHazeStyle
 import com.kristianskokars.catnexus.core.presentation.components.BackgroundSurface
@@ -99,6 +101,7 @@ fun CatDetailsScreen(
         }
     }
     val pagerState = rememberPagerState(initialPage = navArgsDelegate.catPageIndex, pageCount = { pageCount })
+    val swipeDirection by viewModel.swipeDirection.collectAsStateWithLifecycle()
 
     LaunchedEffect(pagerState) {
         snapshotFlow { pagerState.currentPage }.collectLatest { page ->
@@ -112,6 +115,7 @@ fun CatDetailsScreen(
 
     CatDetailsContent(
         cats = cats,
+        swipeDirection = swipeDirection,
         pagerState = pagerState,
         isCatDownloading = isCatDownloading,
         resultNavigator = resultNavigator,
@@ -127,6 +131,7 @@ fun CatDetailsScreen(
 @Composable
 fun CatDetailsContent(
     cats: List<Cat>,
+    swipeDirection: CatSwipeDirection,
     pagerState: PagerState,
     isCatDownloading: Boolean,
     resultNavigator: ResultBackNavigator<Int>,
@@ -180,38 +185,33 @@ fun CatDetailsContent(
                 .then(if (isInLandscape) Modifier.padding(padding) else Modifier.padding(bottom = padding.calculateBottomPadding()))
                 .fillMaxSize(),
         ) {
-            HorizontalPager(
-                state = pagerState,
-                flingBehavior = PagerDefaults.flingBehavior(
+            when (swipeDirection) {
+                CatSwipeDirection.VERTICAL -> VerticalPager(
                     state = pagerState,
-                )
-            ) { index ->
-                val zoomState = rememberZoomState()
-
-                LaunchedEffect(key1 = zoomState.scale) {
-                    zoomFactor = zoomState.scale
+                    flingBehavior = PagerDefaults.flingBehavior(
+                        state = pagerState,
+                    )
+                ) { index ->
+                    ZoomableCatPicture(
+                        cats = cats,
+                        onZoomFactorChange = { zoomFactor = it },
+                        index = index,
+                        pictureHazeState = pictureHazeState,
+                        imageLoader = imageLoader
+                    )
                 }
-
-                Box(
-                    modifier = Modifier
-                        .haze(state = pictureHazeState, style = DefaultHazeStyle)
-                        .fillMaxWidth()
-                        .fillMaxHeight()
-                        .zoomable(zoomState)
-                ) {
-                    val cat = cats[index]
-
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(cat.url)
-                            .crossfade(true)
-                            .build(),
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .fillMaxSize(),
-                        contentScale = ContentScale.Fit,
-                        contentDescription = null,
-                        imageLoader = imageLoader,
+                CatSwipeDirection.HORIZONTAL -> HorizontalPager(
+                    state = pagerState,
+                    flingBehavior = PagerDefaults.flingBehavior(
+                        state = pagerState,
+                    )
+                ) { index ->
+                    ZoomableCatPicture(
+                        cats = cats,
+                        onZoomFactorChange = { zoomFactor = it },
+                        index = index,
+                        pictureHazeState = pictureHazeState,
+                        imageLoader = imageLoader
                     )
                 }
             }
@@ -227,6 +227,44 @@ fun CatDetailsContent(
         }
     }
 
+}
+
+@Composable
+private fun ZoomableCatPicture(
+    cats: List<Cat>,
+    onZoomFactorChange: (Float) -> Unit,
+    index: Int,
+    pictureHazeState: HazeState,
+    imageLoader: ImageLoader,
+) {
+    val zoomState = rememberZoomState()
+
+    LaunchedEffect(key1 = zoomState.scale) {
+        onZoomFactorChange(zoomState.scale)
+    }
+
+    Box(
+        modifier = Modifier
+            .haze(state = pictureHazeState, style = DefaultHazeStyle)
+            .fillMaxWidth()
+            .fillMaxHeight()
+            .zoomable(zoomState)
+    ) {
+        val cat = cats[index]
+
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(cat.url)
+                .crossfade(true)
+                .build(),
+            modifier = Modifier
+                .align(Alignment.Center)
+                .fillMaxSize(),
+            contentScale = ContentScale.Fit,
+            contentDescription = null,
+            imageLoader = imageLoader,
+        )
+    }
 }
 
 @Composable
@@ -334,6 +372,7 @@ private fun CatDetailsScreenPreview() {
     BackgroundSurface {
         CatDetailsContent(
             cats = emptyList(),
+            swipeDirection = CatSwipeDirection.HORIZONTAL,
             isCatDownloading = true,
             pagerState = rememberPagerState { 1 },
             resultNavigator = EmptyResultBackNavigator(),

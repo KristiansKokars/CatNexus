@@ -1,9 +1,12 @@
 package com.kristianskokars.catnexus.feature.cat_detail.presentation
 
+import androidx.datastore.core.DataStore
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kristianskokars.catnexus.core.domain.model.Cat
+import com.kristianskokars.catnexus.core.domain.model.CatSwipeDirection
+import com.kristianskokars.catnexus.core.domain.model.UserSettings
 import com.kristianskokars.catnexus.core.domain.repository.CatRepository
 import com.kristianskokars.catnexus.core.domain.repository.ImageSharer
 import com.kristianskokars.catnexus.feature.navArgs
@@ -23,6 +26,7 @@ import javax.inject.Inject
 class CatDetailsViewModel @Inject constructor(
     private val repository: CatRepository,
     private val imageSharer: ImageSharer,
+    userSettingsStore: DataStore<UserSettings>,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val navArgs = savedStateHandle.navArgs<CatDetailsScreenNavArgs>()
@@ -50,6 +54,10 @@ class CatDetailsViewModel @Inject constructor(
     }
         .flatMapLatest { repository.isCatDownloading(it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    val swipeDirection = userSettingsStore.data
+        .map { it.swipeDirection }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), CatSwipeDirection.HORIZONTAL)
 
     fun saveCat() {
         viewModelScope.launch {

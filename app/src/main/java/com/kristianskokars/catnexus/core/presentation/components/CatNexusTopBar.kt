@@ -3,10 +3,12 @@ package com.kristianskokars.catnexus.core.presentation.components
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -20,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kristianskokars.catnexus.R
 import com.kristianskokars.catnexus.core.presentation.theme.Orange
+import com.kristianskokars.catnexus.feature.destinations.SettingsScreenDestination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeChild
 
@@ -27,6 +31,7 @@ import dev.chrisbanes.haze.hazeChild
 fun CatNexusDefaultTopBar(
     hazeState: HazeState,
     isBorderVisible: Boolean,
+    navigator: DestinationsNavigator,
 ) {
     CatNexusTopBarLayout(hazeState = hazeState, isBorderVisible = isBorderVisible) {
         Row(
@@ -43,6 +48,17 @@ fun CatNexusDefaultTopBar(
                 text = stringResource(R.string.cat_infinity),
                 fontSize = 24.sp,
             )
+            Spacer(modifier = Modifier.weight(1f))
+            IconButton(
+                modifier = Modifier.padding(end = 8.dp),
+                onClick = { navigator.navigate(SettingsScreenDestination) }
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_settings),
+                    contentDescription = stringResource(R.string.open_settings),
+                    tint = Color.White
+                )
+            }
         }
     }
 }
