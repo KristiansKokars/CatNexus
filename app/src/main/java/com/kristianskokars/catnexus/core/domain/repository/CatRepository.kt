@@ -5,9 +5,11 @@ import com.kristianskokars.catnexus.core.domain.model.ServerError
 import com.kristianskokars.catnexus.lib.Result
 import com.kristianskokars.catnexus.lib.Success
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 interface CatRepository {
-    val cats: Flow<List<Cat>>
+    val cats: StateFlow<List<Cat>>
+    val catCount: StateFlow<Int>
     fun getFavouritedCats(): Flow<List<Cat>>
     fun getPagedCat(id: String): Flow<Cat>
     fun getSavedCat(id: String): Flow<Cat>

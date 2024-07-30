@@ -1,5 +1,8 @@
 package com.kristianskokars.catnexus.core.presentation.components
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -19,19 +22,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import coil.ImageLoader
 import com.kristianskokars.catnexus.core.domain.model.Cat
 
 private fun LazyGridState.isScrolledToEnd() = layoutInfo.visibleItemsInfo.lastOrNull()?.index == layoutInfo.totalItemsCount - 1
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun CatGrid(
+fun SharedTransitionScope.CatGrid(
     modifier: Modifier = Modifier,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     cats: List<Cat>,
     onCatClick: (index: Int) -> Unit,
     state: LazyGridState,
     topContentPadding: PaddingValues,
     bottomSlot: @Composable () -> Unit = {},
-    onScrolledToBottom: () -> Unit = {}
+    onScrolledToBottom: () -> Unit = {},
+    imageLoader: ImageLoader
 ) {
     val currentOnScrolledToBottom by rememberUpdatedState(onScrolledToBottom)
     val endOfListReached by remember {
@@ -58,7 +65,9 @@ fun CatGrid(
                 modifier = Modifier
                     .size(124.dp)
                     .clickable { onCatClick(index) },
+                animatedVisibilityScope = animatedVisibilityScope,
                 cat = cat,
+                imageLoader = imageLoader,
             )
         }
         item(span = { GridItemSpan(3) }) {

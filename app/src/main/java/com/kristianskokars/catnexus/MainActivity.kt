@@ -8,7 +8,8 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.LaunchedEffect
@@ -16,18 +17,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import coil.ImageLoader
-import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 import com.kristianskokars.catnexus.core.presentation.components.BackgroundSurface
 import com.kristianskokars.catnexus.core.presentation.components.BelowTopBarDownloadToast
-import com.kristianskokars.catnexus.feature.NavGraphs
 import com.kristianskokars.catnexus.lib.Navigator
 import com.kristianskokars.catnexus.lib.Toaster
 import com.kristianskokars.catnexus.lib.launchImmediate
-import com.kristianskokars.catnexus.lib.screenSlideTransitionAnimations
 import com.ramcosta.composedestinations.DestinationsNavHost
-import com.ramcosta.composedestinations.animations.rememberAnimatedNavHostEngine
+import com.ramcosta.composedestinations.generated.NavGraphs
 import com.ramcosta.composedestinations.navigation.dependency
-import com.ramcosta.composedestinations.navigation.navigate
+import com.ramcosta.composedestinations.rememberNavHostEngine
+import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -39,8 +38,8 @@ class MainActivity : ComponentActivity() {
 
     private val viewModel by viewModels<MainViewModel>()
 
+    @OptIn(ExperimentalSharedTransitionApi::class)
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter") // we are not using anything that needs the safety padding
-    @OptIn(ExperimentalMaterialNavigationApi::class, ExperimentalAnimationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen().apply {
             setKeepOnScreenCondition { !viewModel.isInitialized.value }
@@ -55,10 +54,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             val snackbarHostState = remember { SnackbarHostState() }
             val context = LocalContext.current
-            val engine = rememberAnimatedNavHostEngine(
-                rootDefaultAnimations = screenSlideTransitionAnimations,
-            )
+            val engine = rememberNavHostEngine()
             val navController = engine.rememberNavController()
+            val destinationsNavigator = navController.rememberDestinationsNavigator()
 
             LaunchedEffect(key1 = Unit) {
                 launchImmediate {
@@ -72,8 +70,8 @@ class MainActivity : ComponentActivity() {
                 launchImmediate {
                     navigator.navigationActions.collect { navAction ->
                         when (navAction) {
-                            Navigator.Action.GoBack -> navController.navigateUp()
-                            is Navigator.Action.Navigate -> navController.navigate(navAction.direction)
+                            Navigator.Action.GoBack -> destinationsNavigator.navigateUp()
+                            is Navigator.Action.Navigate -> destinationsNavigator.navigate(navAction.direction)
                         }
                     }
                 }
@@ -83,14 +81,16 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     snackbarHost = { BelowTopBarDownloadToast(hostState = snackbarHostState) }
                 ) {
-                    DestinationsNavHost(
-                        engine = engine,
-                        navController = navController,
-                        dependenciesContainerBuilder = {
-                            dependency(imageLoader)
-                        },
-                        navGraph = NavGraphs.root,
-                    )
+                    SharedTransitionLayout {
+                        DestinationsNavHost(
+                            navController = navController,
+                            dependenciesContainerBuilder = {
+                                dependency(imageLoader)
+                                dependency(this@SharedTransitionLayout)
+                            },
+                            navGraph = NavGraphs.main,
+                        )
+                    }
                 }
             }
         }

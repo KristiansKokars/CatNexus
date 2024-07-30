@@ -1,5 +1,12 @@
 package com.kristianskokars.catnexus.core.presentation.components
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.material.ripple.RippleAlpha
@@ -27,53 +34,68 @@ enum class BottomBarDestination {
     HOME, FAVOURITES
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun CatNexusBottomBar(
+fun SharedTransitionScope.CatNexusBottomBar(
     modifier: Modifier = Modifier,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     hazeState: HazeState,
     currentDestination: BottomBarDestination,
     onHomeClick: () -> Unit,
     onFavouritesClick: () -> Unit,
 ) {
-    Column(modifier = modifier) {
-        CatNexusDivider()
-        NavigationBar(
-            modifier = Modifier.hazeChild(hazeState),
-            containerColor = Black,
-            tonalElevation = 0.dp
+    with(animatedVisibilityScope) {
+        Column(
+            modifier = modifier
+                .renderInSharedTransitionScopeOverlay(zIndexInOverlay = 1f)
+                .animateEnterExit(
+                    enter = fadeIn() + slideInVertically {
+                        it
+                    },
+                    exit = fadeOut() + slideOutVertically {
+                        it
+                    }
+                )
         ) {
-            val bottomBarColors = NavigationBarItemDefaults.colors(
-                selectedIconColor = Orange,
-                selectedTextColor = Orange,
-                unselectedTextColor = Color.White,
-                indicatorColor = Color.Transparent
-            )
+            CatNexusDivider()
+            NavigationBar(
+                modifier = Modifier.hazeChild(hazeState),
+                containerColor = Black,
+                tonalElevation = 0.dp
+            ) {
+                val bottomBarColors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = Orange,
+                    selectedTextColor = Orange,
+                    unselectedTextColor = Color.White,
+                    indicatorColor = Color.Transparent
+                )
 
-            CompositionLocalProvider(LocalRippleTheme provides NoRippleTheme) {
-                NavigationBarItem(
-                    colors = bottomBarColors,
-                    selected = currentDestination == BottomBarDestination.HOME,
-                    onClick = onHomeClick,
-                    icon = {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_home),
-                            contentDescription = null
-                        )
-                    },
-                    label = { Text(text = stringResource(R.string.home), fontFamily = Inter) }
-                )
-                NavigationBarItem(
-                    colors = bottomBarColors,
-                    selected = currentDestination == BottomBarDestination.FAVOURITES,
-                    onClick = onFavouritesClick,
-                    icon = {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_favourite),
-                            contentDescription = null
-                        )
-                    },
-                    label = { Text(text = stringResource(R.string.favourites), fontFamily = Inter) }
-                )
+                CompositionLocalProvider(LocalRippleTheme provides NoRippleTheme) {
+                    NavigationBarItem(
+                        colors = bottomBarColors,
+                        selected = currentDestination == BottomBarDestination.HOME,
+                        onClick = onHomeClick,
+                        icon = {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_home),
+                                contentDescription = null
+                            )
+                        },
+                        label = { Text(text = stringResource(R.string.home), fontFamily = Inter) }
+                    )
+                    NavigationBarItem(
+                        colors = bottomBarColors,
+                        selected = currentDestination == BottomBarDestination.FAVOURITES,
+                        onClick = onFavouritesClick,
+                        icon = {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_favourite),
+                                contentDescription = null
+                            )
+                        },
+                        label = { Text(text = stringResource(R.string.favourites), fontFamily = Inter) }
+                    )
+                }
             }
         }
     }

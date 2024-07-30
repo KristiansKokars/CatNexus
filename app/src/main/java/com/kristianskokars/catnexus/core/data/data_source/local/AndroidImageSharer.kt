@@ -31,17 +31,16 @@ class AndroidImageSharer(
                 val newFile = File(path, "${Random.nextInt(from = 0, until = Int.MAX_VALUE)}.${url.extensionFromImageUrl()}")
                 newFile.delete()
                 newFile.createNewFile()
+
                 val stream = FileOutputStream("$newFile")
-
                 URL(url).openStream().use { it.copyTo(stream) }
-
                 stream.close()
+
                 val contentUri = FileProvider.getUriForFile(
                     context,
                     "com.kristianskokars.catnexus.fileprovider",
                     newFile
                 )
-
                 shareCat.putExtra(Intent.EXTRA_STREAM, contentUri)
 
                 val shareCatChooser = Intent.createChooser(shareCat, null)

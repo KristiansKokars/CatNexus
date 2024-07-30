@@ -37,10 +37,11 @@ import com.kristianskokars.catnexus.core.presentation.theme.Gray
 import com.kristianskokars.catnexus.core.presentation.theme.Red
 import com.kristianskokars.catnexus.feature.settings.presentation.components.CatNexusSwitch
 import com.kristianskokars.catnexus.feature.settings.presentation.components.OrientationSwitch
+import com.kristianskokars.catnexus.lib.MainGraph
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
-@Destination
+@Destination<MainGraph>
 @Composable
 fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel(),

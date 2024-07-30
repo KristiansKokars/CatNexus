@@ -23,9 +23,12 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -37,7 +40,15 @@ class OfflineFirstCatRepository(
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : CatRepository {
     private val scope = CoroutineScope(ioDispatcher)
-    override val cats: Flow<List<Cat>> = pagedCatDao.getPagedCats().map { list -> list.map { it.toCat() } }.flowOn(ioDispatcher)
+    override val cats = pagedCatDao
+        .getPagedCats()
+        .map { list -> list.map { it.toCat() } }
+        .flowOn(ioDispatcher)
+        .stateIn(CoroutineScope(ioDispatcher), SharingStarted.Eagerly, emptyList())
+    override val catCount: StateFlow<Int> =
+        cats
+            .map { it.size }
+            .stateIn(CoroutineScope(ioDispatcher), SharingStarted.Eagerly, Int.MAX_VALUE)
 
     override fun getFavouritedCats(): Flow<List<Cat>> = catDao.getFavouritedCats().map { list -> list.map { it.toCat() } }
 

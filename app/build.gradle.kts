@@ -8,6 +8,7 @@ plugins {
     id("kotlin-parcelize")
     id("com.google.devtools.ksp")
     id("io.sentry.android.gradle")
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
@@ -22,6 +23,7 @@ android {
         versionName = "1.3.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        //         testInstrumentationRunner = "com.kristianskokars.catnexus.app.HiltTestRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -35,6 +37,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
 
             ndk {
                 debugSymbolLevel = "FULL"
@@ -47,13 +50,11 @@ android {
     }
     kotlinOptions {
         jvmTarget = "11"
+        freeCompilerArgs = freeCompilerArgs + "-Xcontext-receivers"
     }
     buildFeatures {
         compose = true
         buildConfig = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.11"
     }
     packaging {
         resources {
@@ -64,17 +65,17 @@ android {
 
 dependencies {
     // Android
-    implementation("androidx.core:core-ktx:1.12.0")
-    implementation("androidx.compose.ui:ui:1.6.4")
+    implementation("androidx.core:core-ktx:1.13.1")
+    implementation("androidx.compose.ui:ui:1.7.0-beta06")
     implementation("androidx.compose.material3:material3:1.2.1")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.6.4")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
-    implementation("androidx.activity:activity-compose:1.8.2")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.6.8")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
+    implementation("androidx.activity:activity-compose:1.9.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.4")
     implementation("androidx.core:core-splashscreen:1.0.1")
 
     // Retrofit
-    implementation("com.squareup.retrofit2:retrofit:2.10.0")
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
@@ -82,13 +83,14 @@ dependencies {
     // Room
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
+    implementation("androidx.test:runner:1.6.1")
     ksp("androidx.room:room-compiler:2.6.1")
 
     // DataStore
-    implementation("androidx.datastore:datastore-preferences:1.0.0")
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
 
     // Hilt
-    implementation("com.google.dagger:hilt-android:2.51")
+    implementation("com.google.dagger:hilt-android:2.51.1")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     implementation("androidx.hilt:hilt-work:1.2.0")
     ksp("androidx.hilt:hilt-compiler:1.2.0")
@@ -102,9 +104,8 @@ dependencies {
     implementation("io.coil-kt:coil-gif:2.6.0")
 
     // Compose Destinations
-    implementation("io.github.raamcosta.compose-destinations:core:1.10.2")
-    implementation("io.github.raamcosta.compose-destinations:animations-core:1.10.2")
-    ksp("io.github.raamcosta.compose-destinations:ksp:1.10.2")
+    implementation("io.github.raamcosta.compose-destinations:core:2.1.0-beta10")
+    ksp("io.github.raamcosta.compose-destinations:ksp:2.1.0-beta10")
 
     // Timber
     implementation("com.jakewharton.timber:timber:5.0.1")
@@ -121,7 +122,14 @@ dependencies {
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
     testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
     testImplementation("io.kotest:kotest-assertions-core:5.8.1")
-    debugImplementation("androidx.compose.ui:ui-tooling:1.6.4")
+
+    debugImplementation("androidx.compose.ui:ui-tooling:1.6.8")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.6.8")
+
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.6.8")
+    androidTestImplementation("com.google.dagger:hilt-android-testing:2.44")
+    kspAndroidTest("androidx.hilt:hilt-compiler:1.2.0")
+    androidTestImplementation("io.kotest:kotest-assertions-core:5.8.1")
 }
 
 sentry {
