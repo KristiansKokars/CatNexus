@@ -1,12 +1,11 @@
 package com.kristianskokars.catnexus.core.presentation.components
 
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.material.ripple.RippleAlpha
@@ -27,11 +26,50 @@ import com.kristianskokars.catnexus.R
 import com.kristianskokars.catnexus.core.presentation.theme.Black
 import com.kristianskokars.catnexus.core.presentation.theme.Inter
 import com.kristianskokars.catnexus.core.presentation.theme.Orange
+import com.ramcosta.composedestinations.generated.NavGraphs
+import com.ramcosta.composedestinations.generated.navgraphs.FavouriteNavGraph
+import com.ramcosta.composedestinations.generated.navgraphs.HomeNavGraph
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.spec.Direction
+import com.ramcosta.composedestinations.spec.DirectionNavGraphSpec
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeChild
 
-enum class BottomBarDestination {
-    HOME, FAVOURITES
+fun DestinationsNavigator.navigateToBottomBarDestination(destination: Direction) {
+    navigate(destination) {
+        popUpTo(NavGraphs.main) {
+            saveState = true
+        }
+        launchSingleTop = true
+        restoreState = true
+    }
+}
+
+enum class BottomBarDestination(
+    @StringRes val label: Int,
+    val icon: @Composable () -> Unit,
+    val navGraph: DirectionNavGraphSpec
+) {
+    HOME(
+        label = R.string.home,
+        icon = {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_home),
+                contentDescription = null
+            )
+        },
+        navGraph = HomeNavGraph
+    ),
+    FAVOURITES(
+        label = R.string.favourites,
+        icon = {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_favourite),
+                contentDescription = null
+            )
+        },
+        navGraph = FavouriteNavGraph
+    )
 }
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -40,21 +78,19 @@ fun SharedTransitionScope.CatNexusBottomBar(
     modifier: Modifier = Modifier,
     animatedVisibilityScope: AnimatedVisibilityScope,
     hazeState: HazeState,
-    currentDestination: BottomBarDestination,
-    onHomeClick: () -> Unit,
-    onFavouritesClick: () -> Unit,
+    navigator: DestinationsNavigator,
+    currentDestination: BottomBarDestination
 ) {
     with(animatedVisibilityScope) {
         Column(
             modifier = modifier
-                .renderInSharedTransitionScopeOverlay(zIndexInOverlay = 1f)
-                .animateEnterExit(
-                    enter = fadeIn() + slideInVertically {
-                        it
-                    },
-                    exit = fadeOut() + slideOutVertically {
-                        it
-                    }
+                .then(
+                    if (currentDestination == BottomBarDestination.HOME) Modifier
+                        .renderInSharedTransitionScopeOverlay(zIndexInOverlay = 1f)
+                        .animateEnterExit(
+                            enter = EnterTransition.None,
+                            exit = fadeOut()
+                        ) else Modifier
                 )
         ) {
             CatNexusDivider()
@@ -71,30 +107,20 @@ fun SharedTransitionScope.CatNexusBottomBar(
                 )
 
                 CompositionLocalProvider(LocalRippleTheme provides NoRippleTheme) {
-                    NavigationBarItem(
-                        colors = bottomBarColors,
-                        selected = currentDestination == BottomBarDestination.HOME,
-                        onClick = onHomeClick,
-                        icon = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_home),
-                                contentDescription = null
-                            )
-                        },
-                        label = { Text(text = stringResource(R.string.home), fontFamily = Inter) }
-                    )
-                    NavigationBarItem(
-                        colors = bottomBarColors,
-                        selected = currentDestination == BottomBarDestination.FAVOURITES,
-                        onClick = onFavouritesClick,
-                        icon = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_favourite),
-                                contentDescription = null
-                            )
-                        },
-                        label = { Text(text = stringResource(R.string.favourites), fontFamily = Inter) }
-                    )
+                    BottomBarDestination.entries.forEach { bottomBarDestination ->
+                        NavigationBarItem(
+                            colors = bottomBarColors,
+                            selected = currentDestination.navGraph() == bottomBarDestination.navGraph,
+                            onClick = { navigator.navigateToBottomBarDestination(bottomBarDestination.navGraph) },
+                            icon = {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_home),
+                                    contentDescription = null
+                                )
+                            },
+                            label = { Text(text = stringResource(id = bottomBarDestination.label), fontFamily = Inter) }
+                        )
+                    }
                 }
             }
         }

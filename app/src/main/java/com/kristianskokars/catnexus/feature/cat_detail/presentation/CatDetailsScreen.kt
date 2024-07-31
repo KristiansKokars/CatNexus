@@ -42,7 +42,7 @@ import com.kristianskokars.catnexus.feature.cat_detail.presentation.components.C
 import com.kristianskokars.catnexus.feature.cat_detail.presentation.components.CatPictureActionBar
 import com.kristianskokars.catnexus.feature.cat_detail.presentation.components.DeleteCatConfirmationDialog
 import com.kristianskokars.catnexus.feature.cat_detail.presentation.components.ZoomableCatPicture
-import com.kristianskokars.catnexus.lib.MainGraph
+import com.kristianskokars.catnexus.nav.HomeGraph
 import com.ramcosta.composedestinations.animations.defaults.DefaultFadingTransitions
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.result.EmptyResultBackNavigator
@@ -55,7 +55,7 @@ import kotlinx.coroutines.launch
 data class CatDetailsScreenNavArgs(val catPageIndex: Int, val showFavourites: Boolean = false)
 
 @OptIn(ExperimentalSharedTransitionApi::class)
-@Destination<MainGraph>(
+@Destination<HomeGraph>(
     navArgs = CatDetailsScreenNavArgs::class,
     style = DefaultFadingTransitions::class
 )

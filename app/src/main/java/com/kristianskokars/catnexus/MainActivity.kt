@@ -79,7 +79,7 @@ class MainActivity : ComponentActivity() {
 
             BackgroundSurface {
                 Scaffold(
-                    snackbarHost = { BelowTopBarDownloadToast(hostState = snackbarHostState) }
+                    snackbarHost = { BelowTopBarDownloadToast(hostState = snackbarHostState) },
                 ) {
                     SharedTransitionLayout {
                         DestinationsNavHost(

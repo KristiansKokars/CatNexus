@@ -44,8 +44,8 @@ import com.kristianskokars.catnexus.core.presentation.theme.Black
 import com.kristianskokars.catnexus.core.presentation.theme.Inter
 import com.kristianskokars.catnexus.core.presentation.theme.Orange
 import com.kristianskokars.catnexus.feature.cat_detail.presentation.CatDetailsScreenNavArgs
-import com.kristianskokars.catnexus.lib.MainGraph
 import com.kristianskokars.catnexus.lib.navigateToBottomBarDestination
+import com.kristianskokars.catnexus.nav.FavouriteGraph
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.generated.destinations.CatDetailsScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.CatListScreenDestination
@@ -88,7 +88,7 @@ object FavouritesTransitions : DestinationStyle.Animated() {
 }
 
 @OptIn(ExperimentalSharedTransitionApi::class)
-@Destination<MainGraph>(style = FavouritesTransitions::class)
+@Destination<FavouriteGraph>(start = true, style = FavouritesTransitions::class)
 @Composable
 fun SharedTransitionScope.FavouritesScreen(
     viewModel: FavouritesViewModel = hiltViewModel(),
@@ -150,15 +150,15 @@ private fun SharedTransitionScope.Content(
                 navigator = navigator,
                 isInCarMode = isInCarMode,
                 onCatNexusLogoClick = onCatNexusLogoClick,
+                animatedVisibilityScope = animatedVisibilityScope
             )
         },
         bottomBar = {
             CatNexusBottomBar(
+                navigator = navigator,
                 hazeState = hazeState,
                 animatedVisibilityScope = animatedVisibilityScope,
                 currentDestination = BottomBarDestination.FAVOURITES,
-                onHomeClick = { navigator.navigateToBottomBarDestination(CatListScreenDestination) },
-                onFavouritesClick = { /* IGNORED */ }
             )
         }
     ) { padding ->

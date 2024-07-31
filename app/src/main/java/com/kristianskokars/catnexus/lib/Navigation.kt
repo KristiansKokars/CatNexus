@@ -7,8 +7,6 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.navigation.NavBackStackEntry
 import com.ramcosta.composedestinations.animations.NavHostAnimatedDestinationStyle
-import com.ramcosta.composedestinations.animations.defaults.NoTransitions
-import com.ramcosta.composedestinations.annotation.NavHostGraph
 import com.ramcosta.composedestinations.generated.NavGraphs
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.spec.DestinationStyle
@@ -49,11 +47,6 @@ object NoTransitions : DestinationStyle.Animated() {
         null
     }
 }
-
-@NavHostGraph(
-    defaultTransitions = NoTransitions::class,
-)
-annotation class MainGraph
 
 fun DestinationsNavigator.navigateToBottomBarDestination(destination: Direction) {
     navigate(destination) {
