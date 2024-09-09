@@ -7,10 +7,9 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material.ripple.LocalRippleTheme
-import androidx.compose.material.ripple.RippleAlpha
-import androidx.compose.material.ripple.RippleTheme
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -72,7 +71,7 @@ enum class BottomBarDestination(
     )
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun SharedTransitionScope.CatNexusBottomBar(
     modifier: Modifier = Modifier,
@@ -106,18 +105,13 @@ fun SharedTransitionScope.CatNexusBottomBar(
                     indicatorColor = Color.Transparent
                 )
 
-                CompositionLocalProvider(LocalRippleTheme provides NoRippleTheme) {
+                CompositionLocalProvider(LocalRippleConfiguration provides null) {
                     BottomBarDestination.entries.forEach { bottomBarDestination ->
                         NavigationBarItem(
                             colors = bottomBarColors,
                             selected = currentDestination.navGraph() == bottomBarDestination.navGraph,
                             onClick = { navigator.navigateToBottomBarDestination(bottomBarDestination.navGraph) },
-                            icon = {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_home),
-                                    contentDescription = null
-                                )
-                            },
+                            icon = bottomBarDestination.icon,
                             label = { Text(text = stringResource(id = bottomBarDestination.label), fontFamily = Inter) }
                         )
                     }
@@ -125,12 +119,4 @@ fun SharedTransitionScope.CatNexusBottomBar(
             }
         }
     }
-}
-
-private object NoRippleTheme : RippleTheme {
-    @Composable
-    override fun defaultColor() = Color.Unspecified
-
-    @Composable
-    override fun rippleAlpha(): RippleAlpha = RippleAlpha(0.0f, 0.0f, 0.0f, 0.0f)
 }

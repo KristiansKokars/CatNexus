@@ -32,6 +32,7 @@ fun CatDetailsTopBar(
     pagerState: PagerState,
     state: CatDetailsState,
     onEvent: (CatDetailsEvent) -> Unit,
+    isGoBackEnabled: Boolean = true,
 ) {
     CatNexusTopBarLayout(hazeState = hazeState, isBorderVisible = zoomFactor != 1f) {
         Row(
@@ -40,7 +41,9 @@ fun CatDetailsTopBar(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(
-                onClick = { resultNavigator.navigateBack(pagerState.currentPage) },
+                onClick = {
+                    if (isGoBackEnabled) resultNavigator.navigateBack(pagerState.currentPage)
+                },
                 rippleRadius = 24.dp,
             ) {
                 Icon(

@@ -95,7 +95,7 @@ fun SharedTransitionScope.CatDetailsScreen(
     }
 
     BackHandler {
-        resultNavigator.navigateBack(pagerState.currentPage)
+        if (!pagerState.isScrollInProgress) resultNavigator.navigateBack(pagerState.currentPage)
     }
 
     CatDetailsContent(
@@ -146,8 +146,7 @@ private fun SharedTransitionScope.CatDetailsContent(
     var zoomFactor by remember { mutableFloatStateOf(1f) }
 
     if (state.cats.getOrNull(pagerState.currentPage) == null || state.cats.isEmpty()) {
-        Column(modifier = Modifier.fillMaxSize()) {
-        }
+        Column(modifier = Modifier.fillMaxSize()) { /* TODO: show error and a go back button */}
         return
     }
 
@@ -168,7 +167,8 @@ private fun SharedTransitionScope.CatDetailsContent(
                 resultNavigator = resultNavigator,
                 pagerState = pagerState,
                 state = state,
-                onEvent = onEvent
+                onEvent = onEvent,
+                isGoBackEnabled = !pagerState.isScrollInProgress
             )
         }
     ) { padding ->
@@ -180,6 +180,7 @@ private fun SharedTransitionScope.CatDetailsContent(
         ) {
             when (state.swipeDirection) {
                 CatSwipeDirection.VERTICAL -> VerticalPager(
+                    userScrollEnabled = !isTransitionActive,
                     state = pagerState,
                     flingBehavior = PagerDefaults.flingBehavior(
                         state = pagerState,
@@ -196,6 +197,7 @@ private fun SharedTransitionScope.CatDetailsContent(
                 }
 
                 CatSwipeDirection.HORIZONTAL -> HorizontalPager(
+                    userScrollEnabled = !isTransitionActive,
                     state = pagerState,
                     flingBehavior = PagerDefaults.flingBehavior(
                         state = pagerState,
@@ -222,7 +224,6 @@ private fun SharedTransitionScope.CatDetailsContent(
             )
         }
     }
-
 }
 
 @OptIn(ExperimentalSharedTransitionApi::class)
