@@ -4,11 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kristianskokars.catnexus.core.domain.CarModeHandler
 import com.kristianskokars.catnexus.core.domain.repository.CatRepository
+import com.kristianskokars.catnexus.lib.asStateFlow
+import com.kristianskokars.catnexus.lib.launch
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -18,12 +17,12 @@ class FavouritesViewModel @Inject constructor(
 ) : ViewModel() {
     val state = repository.getFavouritedCats()
         .map { FavouritesState(cats = it) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), FavouritesState())
+        .asStateFlow(viewModelScope, FavouritesState())
 
     val isInCarMode = carModeHandler.isInCarMode
 
     fun onCatNexusLogoClick() {
-        viewModelScope.launch {
+        launch {
             carModeHandler.onCatNexusLogoClick()
         }
     }

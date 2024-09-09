@@ -1,23 +1,56 @@
 package com.kristianskokars.catnexus.lib
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import com.kristianskokars.catnexus.feature.NavGraphs
-import com.ramcosta.composedestinations.animations.defaults.RootNavGraphDefaultAnimations
+import androidx.navigation.NavBackStackEntry
+import com.ramcosta.composedestinations.animations.NavHostAnimatedDestinationStyle
+import com.ramcosta.composedestinations.generated.NavGraphs
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import com.ramcosta.composedestinations.navigation.popUpTo
+import com.ramcosta.composedestinations.spec.DestinationStyle
 import com.ramcosta.composedestinations.spec.Direction
 
-val screenSlideTransitionAnimations get() = RootNavGraphDefaultAnimations(
-    enterTransition = { slideInHorizontally(initialOffsetX = { it }) },
-    exitTransition = { slideOutHorizontally(targetOffsetX = { -it }) },
-    popEnterTransition = { slideInHorizontally(initialOffsetX = { -it }) },
-    popExitTransition = { slideOutHorizontally(targetOffsetX = { it }) },
-)
+object DefaultTransitions : NavHostAnimatedDestinationStyle() {
+    override val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
+        slideInHorizontally(initialOffsetX = { it })
+    }
+
+    override val popEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
+        slideInHorizontally(initialOffsetX = { -it })
+    }
+
+    override val exitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
+        slideOutHorizontally(targetOffsetX = { -it })
+    }
+
+    override val popExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
+        slideOutHorizontally(targetOffsetX = { it })
+    }
+}
+
+object NoTransitions : DestinationStyle.Animated() {
+    override val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition? = {
+        null
+    }
+
+    override val popEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition? = {
+        null
+    }
+
+    override val exitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition? = {
+        null
+    }
+
+    override val popExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition? = {
+        null
+    }
+}
 
 fun DestinationsNavigator.navigateToBottomBarDestination(destination: Direction) {
     navigate(destination) {
-        popUpTo(NavGraphs.root) {
+        popUpTo(NavGraphs.main) {
             saveState = true
         }
         launchSingleTop = true

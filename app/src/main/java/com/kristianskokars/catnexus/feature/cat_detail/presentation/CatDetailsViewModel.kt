@@ -10,22 +10,22 @@ import com.kristianskokars.catnexus.core.domain.model.CatSwipeDirection
 import com.kristianskokars.catnexus.core.domain.model.UserSettings
 import com.kristianskokars.catnexus.core.domain.repository.CatRepository
 import com.kristianskokars.catnexus.core.domain.repository.ImageSharer
-import com.kristianskokars.catnexus.feature.navArgs
 import com.kristianskokars.catnexus.lib.Navigator
 import com.kristianskokars.catnexus.lib.ToastIcon
 import com.kristianskokars.catnexus.lib.ToastMessage
 import com.kristianskokars.catnexus.lib.Toaster
 import com.kristianskokars.catnexus.lib.UIText
+import com.kristianskokars.catnexus.lib.asStateFlow
+import com.kristianskokars.catnexus.lib.launch
+import com.ramcosta.composedestinations.generated.navArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -45,44 +45,62 @@ class CatDetailsViewModel @Inject constructor(
     private val _page = MutableStateFlow(startingCatPageIndex)
     private val _isUnfavouritingSavedCatConfirmation = MutableStateFlow(false)
 
-    val pageCount = if (showFavourites)
-        repository.getFavouritedCats().map { it.size }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Int.MAX_VALUE)
+    private val pageCount = if (showFavourites)
+        repository.getFavouritedCats().map { it.size }.asStateFlow(viewModelScope, Int.MAX_VALUE)
     else
-        repository.cats.map { it.size }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Int.MAX_VALUE)
+        repository.catCount
 
-    val cats =
+    private val cats =
         if (showFavourites)
             repository
                 .getFavouritedCats()
                 .onEach { cats -> if (cats.isEmpty()) navigator.navigateUp() }
-                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+                .asStateFlow(viewModelScope, emptyList())
         else
-            repository.cats.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+            repository.cats
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val isCatDownloading = combine(
+    private val isCatDownloading = combine(
         repository.cats,
         _page
     ) { cats, page ->
         cats[page].id
     }
         .flatMapLatest { repository.isCatDownloading(it) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+        .asStateFlow(viewModelScope, false)
 
-    val swipeDirection = userSettingsStore.data
+    private val swipeDirection = userSettingsStore.data
         .map { it.swipeDirection }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), CatSwipeDirection.HORIZONTAL)
+        .asStateFlow(viewModelScope, CatSwipeDirection.HORIZONTAL)
 
-    val isUnfavouritingSavedCatConfirmation = _isUnfavouritingSavedCatConfirmation.asStateFlow()
+    private val isUnfavouritingSavedCatConfirmation = _isUnfavouritingSavedCatConfirmation.asStateFlow()
 
-    fun saveCat() {
-        viewModelScope.launch {
+    val state = combine(
+        cats, pageCount, isCatDownloading, swipeDirection, isUnfavouritingSavedCatConfirmation
+    ) { cats, pageCount, isCatDownloading, swipeDirection, isUnfavouritingSavedCatConfirmation ->
+        CatDetailsState(cats, pageCount, isCatDownloading, swipeDirection, isUnfavouritingSavedCatConfirmation)
+    }.asStateFlow(viewModelScope, CatDetailsState())
+
+    fun onEvent(event: CatDetailsEvent) {
+        when (event) {
+            CatDetailsEvent.ConfirmUnfavourite -> confirmUnfavourite()
+            CatDetailsEvent.DismissDeleteConfirmation -> dismissDeleteConfirmation()
+            is CatDetailsEvent.OnPageSelected -> onPageSelected(event.page)
+            CatDetailsEvent.SaveCat -> saveCat()
+            CatDetailsEvent.ShareCat -> shareCat()
+            CatDetailsEvent.ToggleFavouriteCat -> toggleFavouriteCat()
+            CatDetailsEvent.ToggleSwipeDirection -> onToggleSwipeDirection()
+        }
+    }
+
+    private fun saveCat() {
+        launch {
             repository.saveCatImage(currentCat())
         }
     }
 
-    fun toggleFavouriteCat() {
-        viewModelScope.launch {
+    private fun toggleFavouriteCat() {
+        launch {
             if (showFavourites && currentCat().isFavourited) {
                 _isUnfavouritingSavedCatConfirmation.update { true }
             } else {
@@ -91,27 +109,27 @@ class CatDetailsViewModel @Inject constructor(
         }
     }
 
-    fun shareCat() {
+    private fun shareCat() {
         imageSharer.shareImage(currentCat().url)
     }
 
-    fun dismissDeleteConfirmation() {
+    private fun dismissDeleteConfirmation() {
         _isUnfavouritingSavedCatConfirmation.update { false }
     }
 
-    fun confirmUnfavourite() {
-        viewModelScope.launch {
+    private fun confirmUnfavourite() {
+        launch {
             _isUnfavouritingSavedCatConfirmation.update { false }
             repository.toggleFavouriteForCat(currentCat().id)
         }
     }
 
-    fun onPageSelected(page: Int) {
+    private fun onPageSelected(page: Int) {
         if (page > cats.value.size - 1) return
 
         // we add more cats one page before the final one to have it preload earlier for better UX
         if (page == cats.value.size - 2 && !showFavourites) {
-            viewModelScope.launch {
+            launch {
                 repository.refreshCats()
             }
         }
@@ -119,8 +137,8 @@ class CatDetailsViewModel @Inject constructor(
         _page.update { page }
     }
 
-    fun onToggleSwipeDirection() {
-        viewModelScope.launch {
+    private fun onToggleSwipeDirection() {
+        launch {
             userSettingsStore.updateData {
                 val newDirection = it.swipeDirection.flip()
                 // TODO: make string resource out of this
@@ -128,7 +146,7 @@ class CatDetailsViewModel @Inject constructor(
                     CatSwipeDirection.VERTICAL -> "Vertical"
                     CatSwipeDirection.HORIZONTAL -> "Horizontal"
                 }
-                viewModelScope.launch {
+                launch {
                     toaster.show(
                         ToastMessage(
                             UIText.StringResource(

@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 
 @SuppressLint("ComposableNaming")
 @Composable
-fun <T : DestinationSpec<*>> ResultRecipient<T, Int>.scrollToReturnedItemIndex(
+fun <T : DestinationSpec> ResultRecipient<T, Int>.scrollToReturnedItemIndex(
     lazyGridState: LazyGridState,
     scrollOffset: Int = -240,
 ) {

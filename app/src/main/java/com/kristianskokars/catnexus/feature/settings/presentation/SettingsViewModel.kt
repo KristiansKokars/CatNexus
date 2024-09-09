@@ -4,11 +4,10 @@ import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kristianskokars.catnexus.core.domain.model.UserSettings
+import com.kristianskokars.catnexus.lib.asStateFlow
+import com.kristianskokars.catnexus.lib.launch
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -24,10 +23,10 @@ class SettingsViewModel @Inject constructor(
                 isInCarMode = data.isInCarMode
             )
         }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SettingsState())
+        .asStateFlow(viewModelScope, SettingsState())
 
     fun onEvent(event: SettingsEvent) {
-        viewModelScope.launch {
+        launch {
             when (event) {
                 SettingsEvent.ToggleDownloadNotificationsShowing -> {
                     store.updateData { data ->

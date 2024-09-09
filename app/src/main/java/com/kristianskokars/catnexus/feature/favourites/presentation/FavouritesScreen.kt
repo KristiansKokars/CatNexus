@@ -1,8 +1,11 @@
 package com.kristianskokars.catnexus.feature.favourites.presentation
 
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -18,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -28,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavBackStackEntry
+import coil.ImageLoader
 import com.kristianskokars.catnexus.core.presentation.components.BackgroundSurface
 import com.kristianskokars.catnexus.core.presentation.components.BottomBarDestination
 import com.kristianskokars.catnexus.core.presentation.components.CatGrid
@@ -38,54 +43,56 @@ import com.kristianskokars.catnexus.core.presentation.scrollToReturnedItemIndex
 import com.kristianskokars.catnexus.core.presentation.theme.Black
 import com.kristianskokars.catnexus.core.presentation.theme.Inter
 import com.kristianskokars.catnexus.core.presentation.theme.Orange
-import com.kristianskokars.catnexus.feature.appDestination
 import com.kristianskokars.catnexus.feature.cat_detail.presentation.CatDetailsScreenNavArgs
-import com.kristianskokars.catnexus.feature.destinations.CatDetailsScreenDestination
-import com.kristianskokars.catnexus.feature.destinations.CatListScreenDestination
 import com.kristianskokars.catnexus.lib.navigateToBottomBarDestination
+import com.kristianskokars.catnexus.nav.FavouriteGraph
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.generated.destinations.CatDetailsScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.CatListScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
 import com.ramcosta.composedestinations.result.ResultRecipient
 import com.ramcosta.composedestinations.spec.DestinationStyle
+import com.ramcosta.composedestinations.utils.destination
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.haze
 
-object FavouritesTransitions : DestinationStyle.Animated {
-    override fun AnimatedContentTransitionScope<NavBackStackEntry>.enterTransition(): EnterTransition? {
-        return when (initialState.appDestination()) {
+object FavouritesTransitions : DestinationStyle.Animated() {
+    override val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition? = {
+        when (initialState.destination()) {
             CatListScreenDestination -> EnterTransition.None
             else -> null
         }
     }
 
-    override fun AnimatedContentTransitionScope<NavBackStackEntry>.popEnterTransition(): EnterTransition? {
-        return when (initialState.appDestination()) {
+    override val popEnterTransition: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?) = {
+        when (initialState.destination()) {
             CatListScreenDestination -> EnterTransition.None
             else -> null
         }
     }
 
-    override fun AnimatedContentTransitionScope<NavBackStackEntry>.exitTransition(): ExitTransition? {
-        return when (targetState.appDestination()) {
+    override val exitTransition: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?) = {
+        when (initialState.destination()) {
             CatListScreenDestination -> ExitTransition.None
             else -> null
         }
     }
 
-    override fun AnimatedContentTransitionScope<NavBackStackEntry>.popExitTransition(): ExitTransition? {
-        return when (targetState.appDestination()) {
+    override val popExitTransition: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?) = {
+        when (initialState.destination()) {
             CatListScreenDestination -> ExitTransition.None
             else -> null
         }
     }
 }
 
-@Destination(style = FavouritesTransitions::class)
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Destination<FavouriteGraph>(start = true, style = FavouritesTransitions::class)
 @Composable
-fun FavouritesScreen(
+fun SharedTransitionScope.FavouritesScreen(
     viewModel: FavouritesViewModel = hiltViewModel(),
+    animatedVisibilityScope: AnimatedVisibilityScope,
     navigator: DestinationsNavigator,
     resultRecipient: ResultRecipient<CatDetailsScreenDestination, Int>
 ) {
@@ -97,6 +104,7 @@ fun FavouritesScreen(
 
     Content(
         navigator = navigator,
+        animatedVisibilityScope = animatedVisibilityScope,
         lazyGridState = lazyGridState,
         state = state,
         isInCarMode = isInCarMode,
@@ -104,9 +112,11 @@ fun FavouritesScreen(
     )
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-private fun Content(
+private fun SharedTransitionScope.Content(
     navigator: DestinationsNavigator,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     lazyGridState: LazyGridState,
     state: FavouritesState,
     isInCarMode: Boolean,
@@ -140,14 +150,15 @@ private fun Content(
                 navigator = navigator,
                 isInCarMode = isInCarMode,
                 onCatNexusLogoClick = onCatNexusLogoClick,
+                animatedVisibilityScope = animatedVisibilityScope
             )
         },
         bottomBar = {
             CatNexusBottomBar(
+                navigator = navigator,
                 hazeState = hazeState,
+                animatedVisibilityScope = animatedVisibilityScope,
                 currentDestination = BottomBarDestination.FAVOURITES,
-                onHomeClick = { navigator.navigateToBottomBarDestination(CatListScreenDestination) },
-                onFavouritesClick = { /* IGNORED */ }
             )
         }
     ) { padding ->
@@ -186,6 +197,7 @@ private fun Content(
                             state = hazeState,
                             style = HazeStyle(tint = Black.copy(alpha = 0.72f), blurRadius = 24.dp)
                         ),
+                    animatedVisibilityScope = animatedVisibilityScope,
                     topContentPadding = PaddingValues(top = padding.calculateTopPadding()),
                     state = lazyGridState,
                     cats = state.cats,
@@ -194,6 +206,7 @@ private fun Content(
                             CatDetailsScreenDestination(CatDetailsScreenNavArgs(it, showFavourites = true))
                         )
                     },
+                    imageLoader = ImageLoader(LocalContext.current)
                 )
             }
 
@@ -205,12 +218,12 @@ private fun Content(
 @Composable
 private fun Preview() {
     BackgroundSurface {
-        Content(
-            navigator = EmptyDestinationsNavigator,
-            lazyGridState = rememberLazyGridState(),
-            state = FavouritesState(),
-            isInCarMode = false,
-            onCatNexusLogoClick = {}
-        )
+//        Content(
+//            navigator = EmptyDestinationsNavigator,
+//            lazyGridState = rememberLazyGridState(),
+//            state = FavouritesState(),
+//            isInCarMode = false,
+//            onCatNexusLogoClick = {}
+//        )
     }
 }

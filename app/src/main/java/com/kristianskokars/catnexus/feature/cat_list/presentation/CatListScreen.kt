@@ -2,8 +2,15 @@ package com.kristianskokars.catnexus.feature.cat_list.presentation
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -25,8 +32,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavBackStackEntry
+import coil.ImageLoader
 import com.kristianskokars.catnexus.R
-import com.kristianskokars.catnexus.core.presentation.components.BackgroundSurface
 import com.kristianskokars.catnexus.core.presentation.components.BottomBarDestination
 import com.kristianskokars.catnexus.core.presentation.components.CatGrid
 import com.kristianskokars.catnexus.core.presentation.components.CatNexusBottomBar
@@ -36,55 +43,60 @@ import com.kristianskokars.catnexus.core.presentation.components.LoadingCats
 import com.kristianskokars.catnexus.core.presentation.components.LoadingSpinner
 import com.kristianskokars.catnexus.core.presentation.scrollToReturnedItemIndex
 import com.kristianskokars.catnexus.core.presentation.theme.Black
-import com.kristianskokars.catnexus.feature.appDestination
-import com.kristianskokars.catnexus.feature.destinations.CatDetailsScreenDestination
-import com.kristianskokars.catnexus.feature.destinations.FavouritesScreenDestination
-import com.kristianskokars.catnexus.lib.navigateToBottomBarDestination
+import com.kristianskokars.catnexus.nav.HomeGraph
 import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootNavGraph
+import com.ramcosta.composedestinations.generated.destinations.CatDetailsScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.FavouritesScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.SettingsScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
 import com.ramcosta.composedestinations.result.ResultRecipient
 import com.ramcosta.composedestinations.spec.DestinationStyle
+import com.ramcosta.composedestinations.utils.destination
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.haze
 
-object HomeTransitions : DestinationStyle.Animated {
-    override fun AnimatedContentTransitionScope<NavBackStackEntry>.enterTransition(): EnterTransition? {
-        return when (initialState.appDestination()) {
+object HomeTransitions : DestinationStyle.Animated() {
+    override val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition? = {
+        when (initialState.destination()) {
             FavouritesScreenDestination -> EnterTransition.None
-            else -> null
+            SettingsScreenDestination -> slideInHorizontally(initialOffsetX = { it })
+            else -> fadeIn()
         }
     }
 
-    override fun AnimatedContentTransitionScope<NavBackStackEntry>.popEnterTransition(): EnterTransition? {
-        return when (initialState.appDestination()) {
+    override val popEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition? = {
+        when (initialState.destination()) {
             FavouritesScreenDestination -> EnterTransition.None
-            else -> null
+            SettingsScreenDestination -> slideInHorizontally(initialOffsetX = { -it })
+            else -> fadeIn()
         }
     }
 
-    override fun AnimatedContentTransitionScope<NavBackStackEntry>.exitTransition(): ExitTransition? {
-        return when (targetState.appDestination()) {
+    override val exitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition? = {
+        when (targetState.destination()) {
             FavouritesScreenDestination -> ExitTransition.None
-            else -> null
+            SettingsScreenDestination -> slideOutHorizontally(targetOffsetX = { -it })
+            else -> fadeOut()
         }
     }
 
-    override fun AnimatedContentTransitionScope<NavBackStackEntry>.popExitTransition(): ExitTransition? {
-        return when (targetState.appDestination()) {
+    override val popExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition? = {
+        when (targetState.destination()) {
             FavouritesScreenDestination -> ExitTransition.None
-            else -> null
+            SettingsScreenDestination -> slideOutHorizontally(targetOffsetX = { it })
+            else -> fadeOut()
         }
     }
 }
 
-@Destination(style = HomeTransitions::class)
-@RootNavGraph(start = true)
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Destination<HomeGraph>(start = true, style = HomeTransitions::class)
 @Composable
-fun CatListScreen(
+fun SharedTransitionScope.CatListScreen(
     viewModel: CatListViewModel = hiltViewModel(),
+    imageLoader: ImageLoader,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     navigator: DestinationsNavigator,
     resultRecipient: ResultRecipient<CatDetailsScreenDestination, Int>
 ) {
@@ -96,18 +108,23 @@ fun CatListScreen(
 
     CatListContent(
         state = state,
+        imageLoader = imageLoader,
         lazyGridState = lazyGridState,
+        animatedVisibilityScope = animatedVisibilityScope,
         navigator = navigator,
         isInCarMode = isInCarMode,
         onFetchMoreCats = viewModel::fetchCats,
         onRetry = viewModel::retryFetch,
-        onCatNexusLogoClick = viewModel::onCatNexusLogoClick
+        onCatNexusLogoClick = viewModel::onCatNexusLogoClick,
     )
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-private fun CatListContent(
+private fun SharedTransitionScope.CatListContent(
     state: CatListState,
+    imageLoader: ImageLoader,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     lazyGridState: LazyGridState,
     navigator: DestinationsNavigator,
     isInCarMode: Boolean,
@@ -124,15 +141,16 @@ private fun CatListContent(
                 isInCarMode = isInCarMode,
                 isBorderVisible = lazyGridState.canScrollBackward,
                 onCatNexusLogoClick = onCatNexusLogoClick,
-                navigator = navigator
+                navigator = navigator,
+                animatedVisibilityScope = animatedVisibilityScope,
             )
         },
         bottomBar = {
            CatNexusBottomBar(
                hazeState = hazeState,
+               animatedVisibilityScope = animatedVisibilityScope,
+               navigator = navigator,
                currentDestination = BottomBarDestination.HOME,
-               onHomeClick = { /* Ignored */ },
-               onFavouritesClick = { navigator.navigateToBottomBarDestination(FavouritesScreenDestination) }
            )
         }
     ) { padding ->
@@ -148,6 +166,7 @@ private fun CatListContent(
                             state = hazeState,
                             style = HazeStyle(tint = Black.copy(alpha = 0.72f), blurRadius = 24.dp)
                         ),
+                    animatedVisibilityScope = animatedVisibilityScope,
                     topContentPadding = PaddingValues(top = padding.calculateTopPadding()),
                     state = lazyGridState,
                     cats = state.cats,
@@ -168,6 +187,7 @@ private fun CatListContent(
                         }
                     },
                     onScrolledToBottom = onFetchMoreCats,
+                    imageLoader = imageLoader
                 )
                 is CatListState.Error -> ErrorGettingCats(onRetry)
                 CatListState.Loading -> LoadingCats()
@@ -177,18 +197,25 @@ private fun CatListContent(
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun CatListContentPreview() {
-    BackgroundSurface {
-        CatListContent(
-            state = CatListState.Loading,
-            isInCarMode = false,
-            lazyGridState = rememberLazyGridState(),
-            navigator = EmptyDestinationsNavigator,
-            onFetchMoreCats = {},
-            onRetry = {},
-            onCatNexusLogoClick = {}
-        )
-    }
+//    BackgroundSurface {
+//        SharedTransitionLayout {
+//            AnimatedVisibility(visible = true) {
+//                CatListContent(
+//                    state = CatListState.Loading,
+//                    animatedVisibilityScope = this,
+//                    isInCarMode = false,
+//                    lazyGridState = rememberLazyGridState(),
+//                    navigator = EmptyDestinationsNavigator,
+//                    onFetchMoreCats = {},
+//                    onRetry = {},
+//                    onCatNexusLogoClick = {},
+//                    imageLoader = ImageLoader(LocalContext.current)
+//                )
+//            }
+//        }
+//    }
 }
