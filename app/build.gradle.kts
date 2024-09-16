@@ -127,7 +127,7 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest:1.7.0")
 
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.7.0")
-    androidTestImplementation("com.google.dagger:hilt-android-testing:2.44")
+    androidTestImplementation("com.google.dagger:hilt-android-testing:2.52")
     kspAndroidTest("androidx.hilt:hilt-compiler:1.2.0")
     androidTestImplementation("io.kotest:kotest-assertions-core:5.8.1")
 }
