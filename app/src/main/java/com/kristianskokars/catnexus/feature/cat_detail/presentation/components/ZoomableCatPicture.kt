@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -47,7 +48,7 @@ fun SharedTransitionScope.ZoomableCatPicture(
             .fillMaxHeight()
             .zoomable(zoomState)
     ) {
-        val cat = cats[index]
+        val cat = remember(cats, index) { cats[index] }
 
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
