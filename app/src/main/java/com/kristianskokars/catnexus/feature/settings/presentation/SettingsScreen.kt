@@ -2,7 +2,6 @@ package com.kristianskokars.catnexus.feature.settings.presentation
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,16 +26,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kristianskokars.catnexus.R
-import com.kristianskokars.catnexus.core.presentation.theme.Gray
 import com.kristianskokars.catnexus.core.presentation.theme.Red
 import com.kristianskokars.catnexus.feature.settings.presentation.components.CatNexusSwitch
 import com.kristianskokars.catnexus.feature.settings.presentation.components.OrientationSwitch
+import com.kristianskokars.catnexus.feature.settings.presentation.components.SettingRow
 import com.kristianskokars.catnexus.lib.DefaultTransitions
 import com.kristianskokars.catnexus.nav.HomeGraph
 import com.ramcosta.composedestinations.annotation.Destination
@@ -119,74 +117,32 @@ private fun Content(
                 }
             ) {
                 item("settings") {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                    SettingRow(
+                        title = stringResource(R.string.swipe_direction),
+                        body = stringResource(R.string.swipe_direction_desc),
                     ) {
-                        Column(
-                            modifier = Modifier.fillMaxWidth(0.7f)
-                        ) {
-                            Text(text = stringResource(R.string.swipe_direction), fontWeight = FontWeight.Medium)
-                            Text(
-                                text = stringResource(R.string.swipe_direction_desc),
-                                color = Gray,
-                                lineHeight = 16.sp,
-                                fontSize = 12.sp
-                            )
-                        }
-                        Spacer(modifier = Modifier.weight(1f))
                         OrientationSwitch(
                             orientation = state.swipeDirection,
                             onCheckedChange = { onEvent(SettingsEvent.ToggleSwipeDirection) }
                         )
                     }
                     Spacer(modifier = Modifier.size(24.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                        Column(
-                            modifier = Modifier.fillMaxWidth(0.7f)
-                        ) {
-                            Text(text = stringResource(R.string.download_notifications), fontWeight = FontWeight.Medium)
-                            Text(
-                                text = stringResource(R.string.show_download_notifications_desc),
-                                color = Gray,
-                                lineHeight = 16.sp,
-                                fontSize = 12.sp
-                            )
-                        }
-                        Spacer(modifier = Modifier.weight(1f))
+                    SettingRow(
+                        title = stringResource(R.string.download_notifications),
+                        body = stringResource(R.string.show_download_notifications_desc)
+                    ) { modifier ->
                         CatNexusSwitch(
-                            modifier = Modifier.weight(1f, false),
+                            modifier = modifier,
                             checked = state.showDownloadNotifications,
                             onCheckedChange = { onEvent(SettingsEvent.ToggleDownloadNotificationsShowing) }
                         )
                     }
                     if (state.isCarModeUnlocked) {
                         Spacer(modifier = Modifier.size(24.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
+                        SettingRow(
+                            title = stringResource(R.string.car_mode),
+                            body = stringResource(R.string.car_mode_desc),
                         ) {
-                            Column(
-                                modifier = Modifier.fillMaxWidth(0.7f)
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.car_mode),
-                                    fontWeight = FontWeight.Medium
-                                )
-                                Text(
-                                    text = stringResource(R.string.car_mode_desc),
-                                    color = Gray,
-                                    lineHeight = 16.sp,
-                                    fontSize = 12.sp
-                                )
-                            }
-                            Spacer(modifier = Modifier.weight(1f))
                             CatNexusSwitch(
                                 modifier = Modifier.weight(1f, false),
                                 checked = state.isInCarMode,
@@ -197,17 +153,9 @@ private fun Content(
                 }
                 item {
                     Spacer(modifier = Modifier.size(24.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
+                    SettingRow(
+                        title = stringResource(R.string.reset_to_default_settings)
                     ) {
-                        Column(
-                            modifier = Modifier.fillMaxWidth(0.7f)
-                        ) {
-                            Text(text = stringResource(R.string.reset_to_default_settings), fontWeight = FontWeight.Medium)
-                        }
-                        Spacer(modifier = Modifier.weight(1f))
                         IconButton(
                             onClick = { onEvent(SettingsEvent.ResetToDefaultSettings) }
                         ) {
