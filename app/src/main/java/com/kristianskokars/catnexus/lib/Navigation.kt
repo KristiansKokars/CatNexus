@@ -9,7 +9,6 @@ import androidx.navigation.NavBackStackEntry
 import com.ramcosta.composedestinations.animations.NavHostAnimatedDestinationStyle
 import com.ramcosta.composedestinations.generated.NavGraphs
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import com.ramcosta.composedestinations.spec.DestinationStyle
 import com.ramcosta.composedestinations.spec.Direction
 
 object DefaultTransitions : NavHostAnimatedDestinationStyle() {
@@ -27,24 +26,6 @@ object DefaultTransitions : NavHostAnimatedDestinationStyle() {
 
     override val popExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
         slideOutHorizontally(targetOffsetX = { it })
-    }
-}
-
-object NoTransitions : DestinationStyle.Animated() {
-    override val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition? = {
-        null
-    }
-
-    override val popEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition? = {
-        null
-    }
-
-    override val exitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition? = {
-        null
-    }
-
-    override val popExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition? = {
-        null
     }
 }
 
