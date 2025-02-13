@@ -10,5 +10,5 @@ data class CatDetailsState(
     val isCurrentCatDownloading: Boolean = false,
     val swipeDirection: CatSwipeDirection = CatSwipeDirection.HORIZONTAL,
     val isUnfavouritingSavedCatConfirmation: Boolean = false,
-    val pictureDoubleTapFunctionality: PictureDoubleTapFunctionality = PictureDoubleTapFunctionality.FAVORITE
+    val pictureDoubleTapFunctionality: PictureDoubleTapFunctionality = PictureDoubleTapFunctionality.ZOOM
 )

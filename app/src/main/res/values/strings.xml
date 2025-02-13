@@ -41,5 +41,5 @@
     <string name="cat_swipe_direction">Cat Swipe Direction</string>
     <string name="flipped_direction_notification">Changed swipe direction to %1$s</string>
     <string name="zoom_on_double_tap">Zoom on Double Tap</string>
-    <string name="adjust_the_double_tap_functionality">Adjust the double tap functionality</string>
+    <string name="adjust_the_double_tap_functionality">Switches if double tapping on a picture zooms into the picture. If it\'s toggled off, it will favourite the picture instead.</string>
 </resources>
