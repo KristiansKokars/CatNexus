@@ -20,7 +20,8 @@ class SettingsViewModel @Inject constructor(
                 swipeDirection = data.swipeDirection,
                 showDownloadNotifications = data.showDownloadNotifications,
                 isCarModeUnlocked = data.isCarModeUnlocked,
-                isInCarMode = data.isInCarMode
+                isInCarMode = data.isInCarMode,
+                pictureDoubleTapFunctionality = data.pictureDoubleTapFunctionality
             )
         }
         .asStateFlow(viewModelScope, SettingsState())
@@ -33,16 +34,25 @@ class SettingsViewModel @Inject constructor(
                         data.copy(showDownloadNotifications = !data.showDownloadNotifications)
                     }
                 }
+
                 SettingsEvent.ToggleSwipeDirection -> {
                     store.updateData { data ->
                         data.copy(swipeDirection = data.swipeDirection.flip())
                     }
                 }
+
                 SettingsEvent.ToggleCarMode -> {
                     store.updateData { data ->
                         data.copy(isInCarMode = !data.isInCarMode)
                     }
                 }
+
+                SettingsEvent.TogglePictureDoubleTapFunctionality -> {
+                    store.updateData { data ->
+                        data.copy(pictureDoubleTapFunctionality = data.pictureDoubleTapFunctionality.change())
+                    }
+                }
+
                 SettingsEvent.ResetToDefaultSettings -> store.updateData { UserSettings() }
             }
         }

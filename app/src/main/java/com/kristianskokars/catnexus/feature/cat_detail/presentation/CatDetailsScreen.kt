@@ -85,7 +85,9 @@ fun SharedTransitionScope.CatDetailsScreen(
             isDownloadPermissionGranted = false
         }
     }
-    val pagerState = rememberPagerState(initialPage = navArgsDelegate.catPageIndex, pageCount = { state.pageCount })
+    val pagerState = rememberPagerState(
+        initialPage = navArgsDelegate.catPageIndex,
+        pageCount = { state.pageCount })
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(pagerState) {
@@ -146,7 +148,7 @@ private fun SharedTransitionScope.CatDetailsContent(
     var zoomFactor by remember { mutableFloatStateOf(1f) }
 
     if (state.cats.getOrNull(pagerState.currentPage) == null || state.cats.isEmpty()) {
-        Column(modifier = Modifier.fillMaxSize()) { /* TODO: show error and a go back button */}
+        Column(modifier = Modifier.fillMaxSize()) { /* TODO: show error and a go back button */ }
         return
     }
 
@@ -192,7 +194,9 @@ private fun SharedTransitionScope.CatDetailsContent(
                         onZoomFactorChange = { zoomFactor = it },
                         index = index,
                         pictureHazeState = pictureHazeState,
-                        imageLoader = imageLoader
+                        imageLoader = imageLoader,
+                        pictureDoubleTapFunctionality = state.pictureDoubleTapFunctionality,
+                        onFavouriteDoubleTap = { onEvent(CatDetailsEvent.ToggleFavouriteCat) }
                     )
                 }
 
@@ -209,7 +213,9 @@ private fun SharedTransitionScope.CatDetailsContent(
                         onZoomFactorChange = { zoomFactor = it },
                         index = index,
                         pictureHazeState = pictureHazeState,
-                        imageLoader = imageLoader
+                        imageLoader = imageLoader,
+                        pictureDoubleTapFunctionality = state.pictureDoubleTapFunctionality,
+                        onFavouriteDoubleTap = { onEvent(CatDetailsEvent.ToggleFavouriteCat) }
                     )
                 }
             }
