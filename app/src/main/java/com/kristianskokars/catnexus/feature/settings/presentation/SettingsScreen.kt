@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kristianskokars.catnexus.R
+import com.kristianskokars.catnexus.core.domain.model.PictureDoubleTapFunctionality
 import com.kristianskokars.catnexus.core.presentation.theme.Red
 import com.kristianskokars.catnexus.feature.settings.presentation.components.CatNexusSwitch
 import com.kristianskokars.catnexus.feature.settings.presentation.components.OrientationSwitch
@@ -150,6 +151,16 @@ private fun Content(
                             )
                         }
                     }
+                    Spacer(modifier = Modifier.size(24.dp))
+                    SettingRow(
+                        title = stringResource(R.string.zoom_on_double_tap),
+                        body = stringResource(R.string.adjust_the_double_tap_functionality),
+                    ) {
+                        CatNexusSwitch(
+                            checked = state.pictureDoubleTapFunctionality == PictureDoubleTapFunctionality.ZOOM,
+                            onCheckedChange = { onEvent(SettingsEvent.TogglePictureDoubleTapFunctionality) }
+                        )
+                    }
                 }
                 item {
                     Spacer(modifier = Modifier.size(24.dp))
@@ -159,7 +170,11 @@ private fun Content(
                         IconButton(
                             onClick = { onEvent(SettingsEvent.ResetToDefaultSettings) }
                         ) {
-                            Icon(painter = painterResource(id = R.drawable.ic_reset), tint = Red, contentDescription = null)
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_reset),
+                                tint = Red,
+                                contentDescription = null
+                            )
                         }
                     }
                 }
@@ -172,7 +187,11 @@ private fun Content(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                Text(text = stringResource(R.string.made_with_love), fontSize = 12.sp, lineHeight = 2.sp)
+                Text(
+                    text = stringResource(R.string.made_with_love),
+                    fontSize = 12.sp,
+                    lineHeight = 2.sp
+                )
                 Text(text = stringResource(R.string.by_kristians), fontSize = 12.sp)
             }
         }

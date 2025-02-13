@@ -69,16 +69,14 @@ class CatDetailsViewModel @Inject constructor(
         .flatMapLatest { repository.isCatDownloading(it) }
         .asStateFlow(viewModelScope, false)
 
-    private val swipeDirection = userSettingsStore.data
-        .map { it.swipeDirection }
-        .asStateFlow(viewModelScope, CatSwipeDirection.HORIZONTAL)
+    private val userSettings = userSettingsStore.data.asStateFlow(viewModelScope, UserSettings())
 
     private val isUnfavouritingSavedCatConfirmation = _isUnfavouritingSavedCatConfirmation.asStateFlow()
 
     val state = combine(
-        cats, pageCount, isCatDownloading, swipeDirection, isUnfavouritingSavedCatConfirmation
-    ) { cats, pageCount, isCatDownloading, swipeDirection, isUnfavouritingSavedCatConfirmation ->
-        CatDetailsState(cats, pageCount, isCatDownloading, swipeDirection, isUnfavouritingSavedCatConfirmation)
+        cats, pageCount, isCatDownloading, userSettings, isUnfavouritingSavedCatConfirmation
+    ) { cats, pageCount, isCatDownloading, userSettings, isUnfavouritingSavedCatConfirmation ->
+        CatDetailsState(cats, pageCount, isCatDownloading, userSettings.swipeDirection, isUnfavouritingSavedCatConfirmation, userSettings.pictureDoubleTapFunctionality)
     }.asStateFlow(viewModelScope, CatDetailsState())
 
     fun onEvent(event: CatDetailsEvent) {

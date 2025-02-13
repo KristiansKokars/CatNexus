@@ -8,4 +8,5 @@ data class UserSettings(
     val showDownloadNotifications: Boolean = true,
     val isCarModeUnlocked: Boolean = false,
     val isInCarMode: Boolean = false,
+    val pictureDoubleTapFunctionality: PictureDoubleTapFunctionality = PictureDoubleTapFunctionality.FAVORITE
 )

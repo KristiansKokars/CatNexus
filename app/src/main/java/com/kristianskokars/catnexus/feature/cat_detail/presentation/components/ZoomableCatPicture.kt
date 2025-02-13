@@ -18,10 +18,12 @@ import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.kristianskokars.catnexus.core.domain.model.Cat
+import com.kristianskokars.catnexus.core.domain.model.PictureDoubleTapFunctionality
 import com.kristianskokars.catnexus.core.presentation.DefaultHazeStyle
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.haze
 import net.engawapg.lib.zoomable.rememberZoomState
+import net.engawapg.lib.zoomable.toggleScale
 import net.engawapg.lib.zoomable.zoomable
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -34,6 +36,9 @@ fun SharedTransitionScope.ZoomableCatPicture(
     index: Int,
     pictureHazeState: HazeState,
     imageLoader: ImageLoader,
+    pictureDoubleTapFunctionality: PictureDoubleTapFunctionality,
+    onFavouriteDoubleTap: () -> Unit
+
 ) {
     val zoomState = rememberZoomState()
 
@@ -46,7 +51,15 @@ fun SharedTransitionScope.ZoomableCatPicture(
             .haze(state = pictureHazeState, style = DefaultHazeStyle)
             .fillMaxWidth()
             .fillMaxHeight()
-            .zoomable(zoomState)
+            .zoomable(
+                zoomState,
+                onDoubleTap = { position ->
+                    when (pictureDoubleTapFunctionality) {
+                        PictureDoubleTapFunctionality.FAVORITE -> onFavouriteDoubleTap()
+                        PictureDoubleTapFunctionality.ZOOM -> zoomState.toggleScale(2.5f, position)
+                    }
+                }
+            )
     ) {
         val cat = remember(cats, index) { cats[index] }
 
