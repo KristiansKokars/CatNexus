@@ -11,8 +11,6 @@ interface CatRepository {
     val cats: StateFlow<List<Cat>>
     val catCount: StateFlow<Int>
     fun getFavouritedCats(): Flow<List<Cat>>
-    fun getPagedCat(id: String): Flow<Cat>
-    fun getSavedCat(id: String): Flow<Cat>
     fun saveCatImage(cat: Cat)
     suspend fun toggleFavouriteForCat(id: String)
     fun isCatDownloading(catId: String): Flow<Boolean>

@@ -69,10 +69,6 @@ class OfflineFirstCatRepository(
             Err(ServerError)
         }
 
-    override fun getPagedCat(id: String): Flow<Cat> = pagedCatDao.getCat(id).map { it.toCat() }
-
-    override fun getSavedCat(id: String): Flow<Cat> = catDao.getCat(id).map { it.toCat() }
-
     override fun saveCatImage(cat: Cat) {
         scope.launch {
             val fileName = "cat${cat.id}"
