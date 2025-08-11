@@ -39,7 +39,7 @@ import com.kristianskokars.catnexus.core.presentation.components.CatGrid
 import com.kristianskokars.catnexus.core.presentation.components.CatNexusBottomBar
 import com.kristianskokars.catnexus.core.presentation.components.CatNexusDefaultTopBar
 import com.kristianskokars.catnexus.core.presentation.components.ErrorGettingCats
-import com.kristianskokars.catnexus.core.presentation.components.LoadingCats
+import com.kristianskokars.catnexus.core.presentation.components.LoadingScreen
 import com.kristianskokars.catnexus.core.presentation.components.LoadingSpinner
 import com.kristianskokars.catnexus.core.presentation.scrollToReturnedItemIndex
 import com.kristianskokars.catnexus.nav.HomeGraph
@@ -184,7 +184,7 @@ private fun SharedTransitionScope.CatListContent(
                     imageLoader = imageLoader
                 )
                 is CatListState.Error -> ErrorGettingCats(onRetry)
-                CatListState.Loading -> LoadingCats()
+                CatListState.Loading -> LoadingScreen()
                 CatListState.NoCats -> Text(text = stringResource(R.string.no_cats_found))
             }
         }

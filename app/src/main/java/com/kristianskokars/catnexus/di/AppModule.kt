@@ -14,6 +14,7 @@ import com.kristianskokars.catnexus.core.data.data_source.local.AndroidImageDown
 import com.kristianskokars.catnexus.core.data.data_source.local.AndroidImageSharer
 import com.kristianskokars.catnexus.core.data.data_source.local.CatDao
 import com.kristianskokars.catnexus.core.data.data_source.local.CatDatabase
+import com.kristianskokars.catnexus.core.data.data_source.local.ContributorDao
 import com.kristianskokars.catnexus.core.data.data_source.local.PagedCatDao
 import com.kristianskokars.catnexus.core.data.data_source.local.userSettingsStore
 import com.kristianskokars.catnexus.core.data.data_source.remote.CatAPI
@@ -23,6 +24,9 @@ import com.kristianskokars.catnexus.core.domain.model.UserSettings
 import com.kristianskokars.catnexus.core.domain.repository.CatRepository
 import com.kristianskokars.catnexus.core.domain.repository.ImageDownloader
 import com.kristianskokars.catnexus.core.domain.repository.ImageSharer
+import com.kristianskokars.catnexus.feature.contributors.data.GitHubAPI
+import com.kristianskokars.catnexus.feature.contributors.data.repository.OfflineFirstContributorRepository
+import com.kristianskokars.catnexus.feature.contributors.domain.repository.ContributorRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -30,9 +34,12 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.serialization.ExperimentalSerializationApi
 import retrofit2.Retrofit
 import javax.inject.Singleton
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 @ExperimentalSerializationApi
 @Module
@@ -48,12 +55,16 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideGitHubAPI(retrofit: Retrofit): GitHubAPI = retrofit.create(GitHubAPI::class.java)
+
+    @Provides
+    @Singleton
     fun provideCatDatabase(@ApplicationContext context: Context): CatDatabase =
         Room.databaseBuilder(
             context,
             CatDatabase::class.java,
             CAT_DATABASE,
-        ).fallbackToDestructiveMigration().build()
+        ).build()
 
     @Provides
     @Singleton
@@ -65,12 +76,37 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideContributorDao(db: CatDatabase): ContributorDao = db.contributorDao()
+
+    @Provides
+    @Singleton
     fun provideCatRepository(
         catDao: CatDao,
         pagedCatDao: PagedCatDao,
         remote: CatAPI,
         workManager: WorkManager,
     ): CatRepository = OfflineFirstCatRepository(catDao, pagedCatDao, remote, workManager)
+
+    @OptIn(ExperimentalTime::class)
+    @Provides
+    @Singleton
+    fun provideContributorRepository(
+        gitHubAPI: GitHubAPI,
+        contributorDao: ContributorDao,
+        clock: Clock,
+    ): ContributorRepository = OfflineFirstContributorRepository(
+        gitHubAPI = gitHubAPI,
+        contributorDao = contributorDao,
+        ioScope = CoroutineScope(
+            Dispatchers.IO + SupervisorJob()
+        ),
+        clock = clock,
+    )
+
+    @OptIn(ExperimentalTime::class)
+    @Provides
+    @Singleton
+    fun provideClock(): Clock = Clock.System
 
     @Provides
     @Singleton

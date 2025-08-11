@@ -1,10 +1,12 @@
 package com.kristianskokars.catnexus.feature.favourites.presentation
 
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -38,7 +40,7 @@ import com.kristianskokars.catnexus.core.presentation.components.BottomBarDestin
 import com.kristianskokars.catnexus.core.presentation.components.CatGrid
 import com.kristianskokars.catnexus.core.presentation.components.CatNexusBottomBar
 import com.kristianskokars.catnexus.core.presentation.components.CatNexusDefaultTopBar
-import com.kristianskokars.catnexus.core.presentation.components.LoadingCats
+import com.kristianskokars.catnexus.core.presentation.components.LoadingScreen
 import com.kristianskokars.catnexus.core.presentation.scrollToReturnedItemIndex
 import com.kristianskokars.catnexus.core.presentation.theme.Inter
 import com.kristianskokars.catnexus.core.presentation.theme.Orange
@@ -49,6 +51,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.generated.destinations.CatDetailsScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.CatListScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
 import com.ramcosta.composedestinations.result.ResultRecipient
 import com.ramcosta.composedestinations.spec.DestinationStyle
 import com.ramcosta.composedestinations.utils.destination
@@ -166,7 +169,7 @@ private fun SharedTransitionScope.Content(
                 .padding(bottom = padding.calculateBottomPadding())
         ) {
             if (state.cats == null) {
-                LoadingCats()
+                LoadingScreen()
             } else if (state.cats.isEmpty()) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
@@ -208,16 +211,22 @@ private fun SharedTransitionScope.Content(
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Preview
 @Composable
 private fun Preview() {
     BackgroundSurface {
-//        Content(
-//            navigator = EmptyDestinationsNavigator,
-//            lazyGridState = rememberLazyGridState(),
-//            state = FavouritesState(),
-//            isInCarMode = false,
-//            onCatNexusLogoClick = {}
-//        )
+        SharedTransitionLayout {
+            AnimatedVisibility(true) {
+                Content(
+                    navigator = EmptyDestinationsNavigator,
+                    lazyGridState = rememberLazyGridState(),
+                    state = FavouritesState(),
+                    isInCarMode = false,
+                    onCatNexusLogoClick = {},
+                    animatedVisibilityScope = this
+                )
+            }
+        }
     }
 }

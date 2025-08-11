@@ -2,13 +2,13 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("kotlin-android")
-    id("kotlin-kapt")
     id("dagger.hilt.android.plugin")
     id("kotlinx-serialization")
     id("kotlin-parcelize")
     id("com.google.devtools.ksp")
     id("io.sentry.android.gradle")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("androidx.room")
 }
 
 android {
@@ -136,4 +136,8 @@ sentry {
     org.set("kristians-kokars")
     projectName.set("cat-nexus")
     authToken.set(System.getenv("SENTRY_AUTH_TOKEN"))
+}
+
+room {
+    schemaDirectory("$projectDir/schemas")
 }
