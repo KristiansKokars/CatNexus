@@ -26,20 +26,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kristianskokars.catnexus.R
-import com.kristianskokars.catnexus.core.domain.model.PictureDoubleTapFunctionality
+import com.kristianskokars.catnexus.core.presentation.components.BackgroundSurface
 import com.kristianskokars.catnexus.core.presentation.theme.Red
 import com.kristianskokars.catnexus.feature.settings.presentation.components.CatNexusSwitch
+import com.kristianskokars.catnexus.feature.settings.presentation.components.DoubleTapActionDropdownMenu
 import com.kristianskokars.catnexus.feature.settings.presentation.components.OrientationSwitch
 import com.kristianskokars.catnexus.feature.settings.presentation.components.SettingRow
 import com.kristianskokars.catnexus.lib.DefaultTransitions
 import com.kristianskokars.catnexus.nav.HomeGraph
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
 
 @Destination<HomeGraph>(style = DefaultTransitions::class)
 @Composable
@@ -156,10 +159,7 @@ private fun Content(
                         title = stringResource(R.string.zoom_on_double_tap),
                         body = stringResource(R.string.adjust_the_double_tap_functionality),
                     ) {
-                        CatNexusSwitch(
-                            checked = state.pictureDoubleTapFunctionality == PictureDoubleTapFunctionality.ZOOM,
-                            onCheckedChange = { onEvent(SettingsEvent.TogglePictureDoubleTapFunctionality) }
-                        )
+                        DoubleTapActionDropdownMenu(state = state, onEvent = onEvent)
                     }
                 }
                 item {
@@ -195,5 +195,17 @@ private fun Content(
                 Text(text = stringResource(R.string.by_kristians), fontSize = 12.sp)
             }
         }
+    }
+}
+
+@Preview
+@Composable
+private fun Preview() {
+    BackgroundSurface {
+        Content(
+            state = SettingsState(),
+            onEvent = {},
+            navigator = EmptyDestinationsNavigator
+        )
     }
 }

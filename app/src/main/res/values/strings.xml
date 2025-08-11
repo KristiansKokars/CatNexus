@@ -40,6 +40,10 @@
     <string name="ok">OK</string>
     <string name="cat_swipe_direction">Cat Swipe Direction</string>
     <string name="flipped_direction_notification">Changed swipe direction to %1$s</string>
-    <string name="zoom_on_double_tap">Zoom on Double Tap</string>
-    <string name="adjust_the_double_tap_functionality">Switches if double tapping on a picture zooms into the picture. If it\'s toggled off, it will favourite the picture instead.</string>
+    <string name="zoom_on_double_tap">Double Tap Action</string>
+    <string name="adjust_the_double_tap_functionality">Determines what action is taken when double tapping a picture.</string>
+    <string name="favouriting_selected_double_tap">Favouriting is selected as double tap function</string>
+    <string name="zoom_selected_double_tap">Zoom is selected as double tap function</string>
+    <string name="zoom">Zoom</string>
+    <string name="favourite">Favourite</string>
 </resources>

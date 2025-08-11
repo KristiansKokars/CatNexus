@@ -76,7 +76,7 @@ class CatDetailsViewModel @Inject constructor(
     val state = combine(
         cats, pageCount, isCatDownloading, userSettings, isUnfavouritingSavedCatConfirmation
     ) { cats, pageCount, isCatDownloading, userSettings, isUnfavouritingSavedCatConfirmation ->
-        CatDetailsState(cats, pageCount, isCatDownloading, userSettings.swipeDirection, isUnfavouritingSavedCatConfirmation, userSettings.pictureDoubleTapFunctionality)
+        CatDetailsState(cats, pageCount, isCatDownloading, userSettings.swipeDirection, isUnfavouritingSavedCatConfirmation, userSettings.pictureDoubleTapAction)
     }.asStateFlow(viewModelScope, CatDetailsState())
 
     fun onEvent(event: CatDetailsEvent) {

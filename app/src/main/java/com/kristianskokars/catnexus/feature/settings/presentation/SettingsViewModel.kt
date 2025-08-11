@@ -21,7 +21,7 @@ class SettingsViewModel @Inject constructor(
                 showDownloadNotifications = data.showDownloadNotifications,
                 isCarModeUnlocked = data.isCarModeUnlocked,
                 isInCarMode = data.isInCarMode,
-                pictureDoubleTapFunctionality = data.pictureDoubleTapFunctionality
+                pictureDoubleTapAction = data.pictureDoubleTapAction
             )
         }
         .asStateFlow(viewModelScope, SettingsState())
@@ -47,9 +47,9 @@ class SettingsViewModel @Inject constructor(
                     }
                 }
 
-                SettingsEvent.TogglePictureDoubleTapFunctionality -> {
+                is SettingsEvent.ChangeDoubleTapAction -> {
                     store.updateData { data ->
-                        data.copy(pictureDoubleTapFunctionality = data.pictureDoubleTapFunctionality.change())
+                        data.copy(pictureDoubleTapAction = event.action)
                     }
                 }
 
