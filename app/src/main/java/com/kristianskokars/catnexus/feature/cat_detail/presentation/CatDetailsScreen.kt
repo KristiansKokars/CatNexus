@@ -29,8 +29,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -138,10 +138,10 @@ private fun SharedTransitionScope.CatDetailsContent(
 ) {
     val hazeState = remember { HazeState() }
     val pictureHazeState = remember { HazeState() }
-    val configuration = LocalConfiguration.current
+    val deviceSize = LocalWindowInfo.current.containerSize
     val isInLandscape by remember {
         derivedStateOf {
-            configuration.screenWidthDp > configuration.screenHeightDp
+            deviceSize.width > deviceSize.height
         }
     }
     var zoomFactor by remember { mutableFloatStateOf(1f) }
