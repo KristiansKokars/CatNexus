@@ -19,9 +19,8 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.kristianskokars.catnexus.core.domain.model.Cat
 import com.kristianskokars.catnexus.core.domain.model.PictureDoubleTapFunctionality
-import com.kristianskokars.catnexus.core.presentation.DefaultHazeStyle
 import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.haze
+import dev.chrisbanes.haze.hazeSource
 import net.engawapg.lib.zoomable.rememberZoomState
 import net.engawapg.lib.zoomable.toggleScale
 import net.engawapg.lib.zoomable.zoomable
@@ -48,7 +47,7 @@ fun SharedTransitionScope.ZoomableCatPicture(
 
     Box(
         modifier = modifier
-            .haze(state = pictureHazeState, style = DefaultHazeStyle)
+            .hazeSource(state = pictureHazeState)
             .fillMaxWidth()
             .fillMaxHeight()
             .zoomable(

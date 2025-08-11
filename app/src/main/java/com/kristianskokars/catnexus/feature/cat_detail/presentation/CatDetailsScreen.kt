@@ -36,7 +36,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.ImageLoader
 import com.kristianskokars.catnexus.core.domain.model.CatSwipeDirection
-import com.kristianskokars.catnexus.core.presentation.DefaultHazeStyle
 import com.kristianskokars.catnexus.core.presentation.components.BackgroundSurface
 import com.kristianskokars.catnexus.feature.cat_detail.presentation.components.CatDetailsTopBar
 import com.kristianskokars.catnexus.feature.cat_detail.presentation.components.CatPictureActionBar
@@ -48,7 +47,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.result.EmptyResultBackNavigator
 import com.ramcosta.composedestinations.result.ResultBackNavigator
 import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.haze
+import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -176,7 +175,7 @@ private fun SharedTransitionScope.CatDetailsContent(
     ) { padding ->
         Box(
             modifier = Modifier
-                .haze(state = hazeState, style = DefaultHazeStyle)
+                .hazeSource(state = hazeState)
                 .then(if (isInLandscape) Modifier.padding(padding) else Modifier.padding(bottom = padding.calculateBottomPadding()))
                 .fillMaxSize(),
         ) {

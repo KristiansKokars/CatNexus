@@ -13,6 +13,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -27,7 +28,7 @@ import com.kristianskokars.catnexus.core.presentation.theme.Gray
 import com.kristianskokars.catnexus.core.presentation.theme.Orange
 import com.kristianskokars.catnexus.core.presentation.theme.Red
 import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.hazeChild
+import dev.chrisbanes.haze.hazeEffect
 
 @Composable
 fun BoxScope.CatPictureActionBar(
@@ -45,7 +46,8 @@ fun BoxScope.CatPictureActionBar(
         modifier = Modifier
             .padding(vertical = 24.dp, horizontal = 36.dp)
             .border(Dp.Hairline, Gray.copy(alpha = 0.4f), CircleShape)
-            .hazeChild(pictureHazeState, shape = CircleShape, style = ElevatedHazeStyle)
+            .clip(CircleShape)
+            .hazeEffect(pictureHazeState, style = ElevatedHazeStyle)
             .padding(8.dp)
             .align(Alignment.BottomCenter),
         horizontalArrangement = Arrangement.Center,

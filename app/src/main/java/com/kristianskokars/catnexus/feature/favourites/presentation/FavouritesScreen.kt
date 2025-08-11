@@ -40,7 +40,6 @@ import com.kristianskokars.catnexus.core.presentation.components.CatNexusBottomB
 import com.kristianskokars.catnexus.core.presentation.components.CatNexusDefaultTopBar
 import com.kristianskokars.catnexus.core.presentation.components.LoadingCats
 import com.kristianskokars.catnexus.core.presentation.scrollToReturnedItemIndex
-import com.kristianskokars.catnexus.core.presentation.theme.Black
 import com.kristianskokars.catnexus.core.presentation.theme.Inter
 import com.kristianskokars.catnexus.core.presentation.theme.Orange
 import com.kristianskokars.catnexus.feature.cat_detail.presentation.CatDetailsScreenNavArgs
@@ -54,8 +53,7 @@ import com.ramcosta.composedestinations.result.ResultRecipient
 import com.ramcosta.composedestinations.spec.DestinationStyle
 import com.ramcosta.composedestinations.utils.destination
 import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.haze
+import dev.chrisbanes.haze.hazeSource
 
 object FavouritesTransitions : DestinationStyle.Animated() {
     override val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition? = {
@@ -192,11 +190,7 @@ private fun SharedTransitionScope.Content(
                 }
             } else {
                 CatGrid(
-                    modifier = Modifier
-                        .haze(
-                            state = hazeState,
-                            style = HazeStyle(tint = Black.copy(alpha = 0.72f), blurRadius = 24.dp)
-                        ),
+                    modifier = Modifier.hazeSource(state = hazeState),
                     animatedVisibilityScope = animatedVisibilityScope,
                     topContentPadding = PaddingValues(top = padding.calculateTopPadding()),
                     state = lazyGridState,
