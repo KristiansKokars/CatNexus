@@ -55,7 +55,7 @@ fun SharedTransitionScope.ZoomableCatPicture(
                 zoomState,
                 onDoubleTap = { position ->
                     when (pictureDoubleTapFunctionality) {
-                        PictureDoubleTapFunctionality.FAVORITE -> onFavouriteDoubleTap()
+                        PictureDoubleTapFunctionality.FAVOURITE -> onFavouriteDoubleTap()
                         PictureDoubleTapFunctionality.ZOOM -> zoomState.toggleScale(2.5f, position)
                     }
                 }
