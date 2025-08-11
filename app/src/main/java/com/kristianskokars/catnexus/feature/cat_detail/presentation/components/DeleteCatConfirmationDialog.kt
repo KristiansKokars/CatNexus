@@ -25,7 +25,7 @@ import com.kristianskokars.catnexus.core.presentation.ElevatedHazeStyle
 import com.kristianskokars.catnexus.core.presentation.theme.Gray
 import com.kristianskokars.catnexus.feature.cat_detail.presentation.CatDetailsEvent
 import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.hazeChild
+import dev.chrisbanes.haze.hazeEffect
 
 @Composable
 fun DeleteCatConfirmationDialog(
@@ -44,9 +44,8 @@ fun DeleteCatConfirmationDialog(
                     Gray.copy(alpha = 0.4f),
                     RoundedCornerShape(4.dp)
                 )
-                .hazeChild(
+                .hazeEffect(
                     pictureHazeState,
-                    shape = RoundedCornerShape(4.dp),
                     style = ElevatedHazeStyle
                 )
                 .padding(16.dp)

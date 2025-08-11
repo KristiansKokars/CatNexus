@@ -12,11 +12,13 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import coil.ImageLoader
+import com.kristianskokars.catnexus.core.presentation.DefaultHazeStyle
 import com.kristianskokars.catnexus.core.presentation.components.BackgroundSurface
 import com.kristianskokars.catnexus.core.presentation.components.BelowTopBarDownloadToast
 import com.kristianskokars.catnexus.lib.Navigator
@@ -28,6 +30,7 @@ import com.ramcosta.composedestinations.navigation.dependency
 import com.ramcosta.composedestinations.rememberNavHostEngine
 import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 import dagger.hilt.android.AndroidEntryPoint
+import dev.chrisbanes.haze.LocalHazeStyle
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -82,14 +85,16 @@ class MainActivity : ComponentActivity() {
                     snackbarHost = { BelowTopBarDownloadToast(hostState = snackbarHostState) },
                 ) {
                     SharedTransitionLayout {
-                        DestinationsNavHost(
-                            navController = navController,
-                            dependenciesContainerBuilder = {
-                                dependency(imageLoader)
-                                dependency(this@SharedTransitionLayout)
-                            },
-                            navGraph = NavGraphs.main,
-                        )
+                        CompositionLocalProvider(LocalHazeStyle provides DefaultHazeStyle) {
+                            DestinationsNavHost(
+                                navController = navController,
+                                dependenciesContainerBuilder = {
+                                    dependency(imageLoader)
+                                    dependency(this@SharedTransitionLayout)
+                                },
+                                navGraph = NavGraphs.main,
+                            )
+                        }
                     }
                 }
             }
