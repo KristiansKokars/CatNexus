@@ -194,7 +194,7 @@ private fun SharedTransitionScope.CatDetailsContent(
                         index = index,
                         pictureHazeState = pictureHazeState,
                         imageLoader = imageLoader,
-                        pictureDoubleTapFunctionality = state.pictureDoubleTapFunctionality,
+                        pictureDoubleTapAction = state.pictureDoubleTapAction,
                         onFavouriteDoubleTap = { onEvent(CatDetailsEvent.ToggleFavouriteCat) }
                     )
                 }
@@ -213,7 +213,7 @@ private fun SharedTransitionScope.CatDetailsContent(
                         index = index,
                         pictureHazeState = pictureHazeState,
                         imageLoader = imageLoader,
-                        pictureDoubleTapFunctionality = state.pictureDoubleTapFunctionality,
+                        pictureDoubleTapAction = state.pictureDoubleTapAction,
                         onFavouriteDoubleTap = { onEvent(CatDetailsEvent.ToggleFavouriteCat) }
                     )
                 }
