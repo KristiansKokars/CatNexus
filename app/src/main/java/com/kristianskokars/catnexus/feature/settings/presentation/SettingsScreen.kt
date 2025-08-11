@@ -1,5 +1,6 @@
 package com.kristianskokars.catnexus.feature.settings.presentation
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -11,7 +12,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -22,10 +22,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kristianskokars.catnexus.R
 import com.kristianskokars.catnexus.core.presentation.components.BackgroundSurface
+import com.kristianskokars.catnexus.core.presentation.components.CatNexusMediumTopAppBar
 import com.kristianskokars.catnexus.core.presentation.theme.Red
 import com.kristianskokars.catnexus.feature.settings.presentation.components.CatNexusSwitch
 import com.kristianskokars.catnexus.feature.settings.presentation.components.DoubleTapActionDropdownMenu
@@ -41,6 +42,7 @@ import com.kristianskokars.catnexus.feature.settings.presentation.components.Set
 import com.kristianskokars.catnexus.lib.DefaultTransitions
 import com.kristianskokars.catnexus.nav.HomeGraph
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.generated.destinations.ContributorsScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
 
@@ -71,14 +73,8 @@ private fun Content(
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            MediumTopAppBar(
-                scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.mediumTopAppBarColors(
-                    containerColor = Color.Transparent,
-                    scrolledContainerColor = Color.Transparent,
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
-                ),
+            CatNexusMediumTopAppBar(
+                title = { Text(text = stringResource(R.string.settings), fontSize = 24.sp) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.navigateUp() }) {
                         Icon(
@@ -87,7 +83,7 @@ private fun Content(
                         )
                     }
                 },
-                title = { Text(text = stringResource(R.string.settings), fontSize = 24.sp) }
+                scrollBehavior = scrollBehavior,
             )
         }
     ) { padding ->
@@ -161,9 +157,21 @@ private fun Content(
                     ) {
                         DoubleTapActionDropdownMenu(state = state, onEvent = onEvent)
                     }
+                    Spacer(modifier = Modifier.size(8.dp))
+                    SettingRow(
+                        modifier = Modifier
+                            .clickable(
+                                role = Role.Button,
+                                onClickLabel = stringResource(R.string.go_to_view_contributors),
+                                onClick = { navigator.navigate(ContributorsScreenDestination) }
+                            )
+                            .padding(vertical = 16.dp)
+                            .fillMaxWidth(),
+                        title = stringResource(R.string.contributors)
+                    )
                 }
                 item {
-                    Spacer(modifier = Modifier.size(24.dp))
+                    Spacer(modifier = Modifier.size(8.dp))
                     SettingRow(
                         title = stringResource(R.string.reset_to_default_settings)
                     ) {

@@ -46,4 +46,7 @@
     <string name="zoom_selected_double_tap">Zoom is selected as double tap function</string>
     <string name="zoom">Zoom</string>
     <string name="favourite">Favourite</string>
+    <string name="go_to_github">Go to %1$s GitHub</string>
+    <string name="contributors">Contributors</string>
+    <string name="go_to_view_contributors">Go to view contributors</string>
 </resources>
