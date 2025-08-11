@@ -25,3 +25,9 @@ val Typography = Typography(
         fontSize = 16.sp,
     )
 )
+
+val SubtitleStyle = TextStyle(
+    color = Gray,
+    lineHeight = 16.sp,
+    fontSize = 12.sp
+)

@@ -10,8 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
-import com.kristianskokars.catnexus.core.presentation.theme.Gray
+import com.kristianskokars.catnexus.core.presentation.theme.SubtitleStyle
 
 @Composable
 fun SettingRow(
@@ -52,8 +51,6 @@ private fun SettingBody(
     Text(
         modifier = modifier,
         text = text,
-        color = Gray,
-        lineHeight = 16.sp,
-        fontSize = 12.sp
+        style = SubtitleStyle,
     )
 }
