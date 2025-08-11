@@ -15,7 +15,7 @@ interface CatDao {
     fun getFavouritedCats(): Flow<List<CatEntity>>
 
     @Query("SELECT * FROM $CAT_TABLE_NAME WHERE id = :catId")
-    fun getCat(catId: String): Flow<CatEntity>
+    fun getCat(catId: String): Flow<CatEntity?>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun addCat(cat: CatEntity)
