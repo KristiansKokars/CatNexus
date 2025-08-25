@@ -66,9 +66,9 @@ android {
 dependencies {
     // Android
     implementation("androidx.core:core-ktx:1.16.0")
-    implementation("androidx.compose.ui:ui:1.8.3")
+    implementation("androidx.compose.ui:ui:1.9.0")
     implementation("androidx.compose.material3:material3:1.3.2")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.8.3")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.9.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.2")
     implementation("androidx.activity:activity-compose:1.10.1")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.9.2")
@@ -123,10 +123,10 @@ dependencies {
     testImplementation("com.squareup.okhttp3:mockwebserver:5.1.0")
     testImplementation("io.kotest:kotest-assertions-core:5.9.1")
 
-    debugImplementation("androidx.compose.ui:ui-tooling:1.8.3")
-    debugImplementation("androidx.compose.ui:ui-test-manifest:1.8.3")
+    debugImplementation("androidx.compose.ui:ui-tooling:1.9.0")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.9.0")
 
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.8.3")
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.9.0")
     androidTestImplementation("com.google.dagger:hilt-android-testing:2.57")
     kspAndroidTest("androidx.hilt:hilt-compiler:1.2.0")
     androidTestImplementation("io.kotest:kotest-assertions-core:5.9.1")
