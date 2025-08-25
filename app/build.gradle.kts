@@ -90,11 +90,11 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.1.7")
 
     // Hilt
-    implementation("com.google.dagger:hilt-android:2.57")
+    implementation("com.google.dagger:hilt-android:2.57.1")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     implementation("androidx.hilt:hilt-work:1.2.0")
     ksp("androidx.hilt:hilt-compiler:1.2.0")
-    ksp("com.google.dagger:hilt-android-compiler:2.57")
+    ksp("com.google.dagger:hilt-android-compiler:2.57.1")
 
     // WorkManager
     implementation("androidx.work:work-runtime-ktx:2.10.3")
@@ -127,7 +127,7 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest:1.8.3")
 
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.8.3")
-    androidTestImplementation("com.google.dagger:hilt-android-testing:2.57")
+    androidTestImplementation("com.google.dagger:hilt-android-testing:2.57.1")
     kspAndroidTest("androidx.hilt:hilt-compiler:1.2.0")
     androidTestImplementation("io.kotest:kotest-assertions-core:5.9.1")
 }
