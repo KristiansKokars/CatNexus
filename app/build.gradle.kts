@@ -121,7 +121,7 @@ dependencies {
     testImplementation("io.mockk:mockk:1.14.5")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
     testImplementation("com.squareup.okhttp3:mockwebserver:5.1.0")
-    testImplementation("io.kotest:kotest-assertions-core:5.9.1")
+    testImplementation("io.kotest:kotest-assertions-core:6.0.1")
 
     debugImplementation("androidx.compose.ui:ui-tooling:1.8.3")
     debugImplementation("androidx.compose.ui:ui-test-manifest:1.8.3")
@@ -129,7 +129,7 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.8.3")
     androidTestImplementation("com.google.dagger:hilt-android-testing:2.57")
     kspAndroidTest("androidx.hilt:hilt-compiler:1.2.0")
-    androidTestImplementation("io.kotest:kotest-assertions-core:5.9.1")
+    androidTestImplementation("io.kotest:kotest-assertions-core:6.0.1")
 }
 
 sentry {
